@@ -1,0 +1,81 @@
+Viết chương trình bằng ngôn ngữ C cho phép người nhập vào danh sách kề của các đỉnh trong một đồ thị có hướng và in ma trận kề của nó màn hình.
+
+Đầu vào
+
+Dữ liệu đầu vào được đọc từ dòng nhập chuẩn (stdin, bàn phím) theo định dạng:
+
+Dòng đầu tiên chứa 1 số nguyên n mô tả số đỉnh của đồ thị
+n dòng tiếp, mỗi dòng mô tả một danh sách kề. Dòng i chứa danh sách các đỉnh kề của đỉnh i. Các phần tử cách nhau một khoảng trắng. Mỗi dòng đều kết thúc bằng số 0.
+Đầu ra
+
+In ra ma trận kề của đồ thị gồm n dòng, mỗi dòng chứa n phần tử, cách nhau 1 một khoảng trắng.
+Chú ý
+
+Giả sử dữ liệu đầu vào luôn hợp lệ, không cần phải kiểm tra
+Nộp toàn bộ chương trình
+Xem thêm định dạng đầu vào và đầu ra trong phần For example
+Ấn "Precheck" (nếu có) để kiểm tra chương trình trên các ví dụ (sai KHÔNG bị trừ điểm)
+Ấn "Check" (nếu có) để kiểm tra chương trình trên toàn bộ dữ liệu kiểm tra (sai bị TRỪ ĐIỂM)
+Gợi ý
+
+Đọc n, khởi tạo đồ thị
+Đọc n danh sách kề. Với danh sách kề của đỉnh u, phần tử v của nó cho biết ta đang có cung (u, v).
+Khi đọc danh sách, sử dụng vòng lặp while (1), đọc cho tới khi gặp số 0 thì thoát vòng lặp (break).
+
+For example:
+
+Input	
+4
+1 4 4 0
+0
+2 3 3 4 0
+2 0
+
+Result
+1 0 0 2
+0 0 0 0
+0 1 2 1
+0 1 0 0
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n;
+    
+    // Đọc số đỉnh của đồ thị
+    scanf("%d", &n);
+
+    // Khởi tạo ma trận kề với các phần tử ban đầu bằng 0
+    int adjacencyMatrix[n][n];
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            adjacencyMatrix[i][j] = 0;
+        }
+    }
+
+    // Đọc danh sách kề và cập nhật ma trận kề
+    for (int i = 0; i < n; i++) {
+        while (1) {
+            int v;
+            scanf("%d", &v);
+            if (v == 0) {
+                break; // Kết thúc danh sách kề cho đỉnh i
+            }
+            adjacencyMatrix[i][v - 1]++; // Tăng số lần xuất hiện cạnh (i, v)
+        }
+    }
+
+    // In ma trận kề
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            printf("%d ", adjacencyMatrix[i][j]);
+        }
+        printf("\n");
+    }
+
+    return 0;
+}
+

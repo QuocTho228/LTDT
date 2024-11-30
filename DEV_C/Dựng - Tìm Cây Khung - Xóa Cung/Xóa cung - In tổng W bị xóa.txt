@@ -1,0 +1,104 @@
+Cho đồ thị G = <V, E> vô hướng, liên thông và có trọng số. Viết chương trình tìm cách xoá một số cung của G sao cho G vẫn còn liên thông và tổng trọng số của các cung bị xoá là lớn nhất.
+
+Đầu vào
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w.
+Đầu ra
+
+In ra màn hình tổng trọng số của các cung bị xoá.
+Xem thêm ví dụ trong phần For example. Trong ví dụ 1, ta chỉ xoá cung (1,4) đồ thị còn lại vẫn liên thông, tổng trọng số các cung bị xoá là 9.
+
+For example:
+
+Input	Result
+4 4	9
+1 2 3
+2 3 6
+4 3 1
+1 4 9
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_EDGES 1000
+
+typedef struct {
+    int u, v, w;
+} Edge;
+
+int parent[MAX_EDGES], rank[MAX_EDGES];
+
+int find(int x) {
+    if (parent[x] != x) {
+        parent[x] = find(parent[x]);
+    }
+    return parent[x];
+}
+
+void unionSets(int x, int y) {
+    int rootX = find(x);
+    int rootY = find(y);
+    
+    if (rootX != rootY) {
+        if (rank[rootX] > rank[rootY]) {
+            parent[rootY] = rootX;
+        } else if (rank[rootX] < rank[rootY]) {
+            parent[rootX] = rootY;
+        } else {
+            parent[rootY] = rootX;
+            rank[rootX]++;
+        }
+    }
+}
+
+int compareEdges(const void *a, const void *b) {
+    return ((Edge*)a)->w - ((Edge*)b)->w;
+}
+
+int kruskal(int n, int m, Edge edges[]) {
+    for (int i = 0; i < n; i++) {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+
+    int mstWeight = 0;
+    int mstEdges = 0;
+    for (int i = 0; i < m; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        
+        if (find(u) != find(v)) {
+            unionSets(u, v);
+            mstWeight += edges[i].w;
+            mstEdges++;
+        }
+    }
+
+    return mstWeight;
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    Edge edges[m];
+    int totalWeight = 0;
+    
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+        totalWeight += edges[i].w;
+    }
+
+    qsort(edges, m, sizeof(Edge), compareEdges);
+
+    int mstWeight = kruskal(n, m, edges);
+    int result = totalWeight - mstWeight;
+
+    printf("%d\n", result);
+
+    return 0;
+}
