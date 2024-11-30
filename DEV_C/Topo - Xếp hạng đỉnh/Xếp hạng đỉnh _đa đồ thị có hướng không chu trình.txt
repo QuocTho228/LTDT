@@ -1,0 +1,133 @@
+Viết chương trình đọc vào một đa đồ thị có hướng không chu trình, xếp hạng các đỉnh và in hạng của các đỉnh ra màn hình.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra màn hình hạng của các đỉnh theo thứ tự của đỉnh, mỗi đỉnh trên 1 dòng theo mẫu:
+```r[1] = abc
+r[2] = xyz
+...```
+Xem thêm ví dụ bên dưới. Trong ví dụ đầu tiên ta có: hạng của 1 = 0, hạng của 2 = 2 và hạng của 3 = 1.
+
+Gợi ý
+
+Xem tài liệu thực hành.
+For example:
+
+Input	
+3 4
+1 3
+3 2
+1 3
+1 3
+
+Result
+r[1] = 0
+r[2] = 2
+r[3] = 1
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 1000
+
+typedef struct Node {
+    int vertex;
+    struct Node* next;
+} Node;
+
+typedef struct Graph {
+    int numVertices;
+    Node* adjList[MAX];
+    int indegree[MAX];
+} Graph;
+
+Graph* createGraph(int vertices) {
+    Graph* graph = (Graph*)malloc(sizeof(Graph));
+    graph->numVertices = vertices;
+
+    for (int i = 1; i <= vertices; i++) {
+        graph->adjList[i] = NULL;
+        graph->indegree[i] = 0;
+    }
+
+    return graph;
+}
+
+void addEdge(Graph* graph, int src, int dest) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->vertex = dest;
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    graph->indegree[dest]++;
+}
+
+void calculateRank(Graph* graph, int* rank) {
+    int queue[MAX], front = 0, rear = 0;
+
+    // Khởi tạo hạng ban đầu
+    for (int i = 1; i <= graph->numVertices; i++) {
+        rank[i] = 0; // Mặc định hạng ban đầu là 0
+        if (graph->indegree[i] == 0) {
+            queue[rear++] = i; // Đưa các đỉnh không có phụ thuộc vào hàng đợi
+        }
+    }
+
+    // Topological Sort
+    while (front < rear) {
+        int u = queue[front++];
+
+        Node* temp = graph->adjList[u];
+        while (temp) {
+            int v = temp->vertex;
+            graph->indegree[v]--;
+
+            // Nếu v không còn phụ thuộc, đưa vào hàng đợi
+            if (graph->indegree[v] == 0) {
+                queue[rear++] = v;
+            }
+
+            // Cập nhật hạng của đỉnh v
+            if (rank[v] < rank[u] + 1) {
+                rank[v] = rank[u] + 1;
+            }
+
+            temp = temp->next;
+        }
+    }
+}
+
+void printRank(int* rank, int n) {
+    for (int i = 1; i <= n; i++) {
+        printf("r[%d] = %d\n", i, rank[i]);
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    Graph* graph = createGraph(n);
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        addEdge(graph, u, v);
+    }
+
+    int rank[MAX];
+    calculateRank(graph, rank);
+    printRank(rank, n);
+
+    return 0;
+}
+

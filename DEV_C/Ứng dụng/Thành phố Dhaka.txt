@@ -1,0 +1,129 @@
+Extended traffic (sửa lại từ: https://lightoj.com/problem/extended-traffic)
+
+Thành phố Dhaka ngày càng đông dân và ồn ào hơn. Một số con đường luôn đông nghẹt và kẹt xe. Để thuyết phục người dân tránh đi các tuyến đường ngắn nhất để giảm tải cho các con đường, thị trưởng thành phố đã lập một kế hoạch như sau. Mỗi giao lộ u
+ của thành phố được gán 1 con số nguyên dương (không quá 20)  cho biết mức độ bận rộn (busy-ness) của giao lộ này, kí hiệu là b[u]
+. Mỗi khi một người dân đi từ giao lộ u đến một giao lộ v, thành phố sẽ có thêm một lượng bận rộn là (b[v]−b[u])3
+.
+
+Thị trưởng nhờ bạn kiểm tra xem nếu một người đi từ giao lộ s đến giao lộ t, anh ta sẽ làm tăng thêm một lượng bận rộn ít nhất là bao nhiêu.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ dòng nhập chuẩn (bàn phím, stdin) với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m tương ứng là số giao lộ và số con đường nối hai giao lộ lại với nhau.
+Dòng thứ hai chứa n số nguyên mô tả độ bận rộn b[u] của các giao lộ.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v nói rằng có một con đường nối hai giao lộ u và v. Tất cả các con đường đều là đường 1 chiều.
+Dòng cuối cùng chứa 2 số nguyên s và t.
+Đầu ra (Output)
+
+In ra màn hình lượng bận rộn ít nhất khi 1 người đi từ giao lộ s đến giao lộ t. Nếu không có đường đi thì in ra ?
+Xem thêm ví dụ bên dưới.
+Gợi ý
+
+Đưa bài toán về đồ thị có hướng có trọng số
+Tìm đường đi ngắn nhất từ s đến t
+For example:
+
+Input		Result
+5 6		1
+6 7 8 9 10
+1 2
+2 3
+3 4
+1 5
+5 4
+4 5
+1 2
+
+
+
+#include <stdio.h>
+#include <limits.h>
+#include <stdlib.h>
+
+#define MAXN 100
+#define INF INT_MAX
+
+typedef struct {
+    int u, v;
+} Edge;
+
+int n, m;
+int b[MAXN];
+int adj[MAXN][MAXN];
+int dist[MAXN];
+int visited[MAXN];
+
+int min(int a, int b) {
+    return (a < b) ? a : b;
+}
+
+int calculate_cost(int u, int v) {
+    return (b[v] - b[u]) * (b[v] - b[u]) * (b[v] - b[u]);
+}
+
+void dijkstra(int s) {
+    for (int i = 1; i <= n; i++) {
+        dist[i] = INF;
+        visited[i] = 0;
+    }
+    dist[s] = 0;
+    
+    for (int i = 1; i <= n; i++) {
+        int u = -1;
+        // Find the unvisited node with the smallest distance
+        for (int j = 1; j <= n; j++) {
+            if (!visited[j] && (u == -1 || dist[j] < dist[u])) {
+                u = j;
+            }
+        }
+        if (u == -1 || dist[u] == INF) break; // No more reachable nodes
+        
+        visited[u] = 1;
+        
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v] && dist[u] + calculate_cost(u, v) < dist[v]) {
+                dist[v] = dist[u] + calculate_cost(u, v);
+            }
+        }
+    }
+}
+
+int main() {
+    scanf("%d %d", &n, &m);
+    
+    // Đọc mức độ bận rộn của các giao lộ
+    for (int i = 1; i <= n; i++) {
+        scanf("%d", &b[i]);
+    }
+
+    // Đọc các con đường nối các giao lộ
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            adj[i][j] = 0;
+        }
+    }
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;  // Đánh dấu có cung từ u đến v
+    }
+
+    // Đọc đỉnh nguồn và đích
+    int s, t;
+    scanf("%d %d", &s, &t);
+    
+    // Chạy thuật toán Dijkstra từ giao lộ s
+    dijkstra(s);
+    
+    // Kiểm tra kết quả
+    if (dist[t] == INF) {
+        printf("?\n");
+    } else {
+        printf("%d\n", dist[t]);
+    }
+    
+    return 0;
+}
+

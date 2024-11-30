@@ -1,0 +1,196 @@
+Mê cung số (number maze)
+
+Cho một mê cung số được biểu diễn bằng một mảng 2 chiều chứa các con số từ 0 đến 9 (xem
+
+hình bên dưới).
+
+
+
+
+Một con robot được đặt tại góc trên bên trái của mê cung và muốn đi đến góc dưới bên phải của mê cung. Con robot có thể đi lên, xuống, qua trái và qua phải 1 ô. Chi phí để đi đến một ô bằng với con số bên trong ô đó.
+
+Hãy tìm cách giúp con robot đi đến ô góc dưới phải sao cho tổng chi phí thấp nhất.
+
+Đường đi có chi phí thấp nhất cho ví dụ này là 24.
+
+
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng dầu chứa 2 số nguyên M N (M: số hàng, N: số cột)
+M dòng tiếp theo mô tả các số trong mê cung
+
+
+Đầu ra (Output):
+
+In ra màn hình chi phí thấp nhất để con robot đi từ góc trên bên trái về góc dưới bên phải. Ví dụ trên, cần in ra màn hình: 24.
+Xem thêm các ví dụ bên dưới.
+
+Gợi ý:
+
+Mô hình hoá bài toán về đồ thị có hướng
+
+Đỉnh ~ ô
+Cung ~ hai ô cạnh nhau
+Trọng số cung (u, v) = giá trị của ô tương ứng với đỉnh v.
+Xem tài liệu thực hành để biết cách đặt tên cho các ô.
+
+
+
+For example:
+
+Input		Result
+4 5		24	
+0 3 1 2 9
+7 3 4 9 9
+1 7 5 5 3
+2 3 4 2 5
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX 100
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+typedef struct {
+    int x, y; // Tọa độ ô
+    int cost; // Chi phí đến ô
+} Cell;
+
+typedef struct {
+    Cell cells[MAX * MAX];
+    int size; // Số lượng ô trong hàng đợi
+} MinHeap;
+
+// Hàm khởi tạo hàng đợi
+void initMinHeap(MinHeap *heap) {
+    heap->size = 0;
+}
+
+// Hàm hoán đổi hai ô trong hàng đợi
+void swap(Cell *a, Cell *b) {
+    Cell temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Hàm thêm một ô vào hàng đợi
+void insert(MinHeap *heap, int x, int y, int cost) {
+    heap->cells[heap->size].x = x;
+    heap->cells[heap->size].y = y;
+    heap->cells[heap->size].cost = cost;
+    int i = heap->size;
+    heap->size++;
+
+    // Duy trì thuộc tính min-heap
+    while (i > 0) {
+        int parent = (i - 1) / 2;
+        if (heap->cells[parent].cost <= heap->cells[i].cost) break;
+        swap(&heap->cells[parent], &heap->cells[i]);
+        i = parent;
+    }
+}
+
+// Hàm lấy ô có chi phí thấp nhất
+Cell extractMin(MinHeap *heap) {
+    Cell min = heap->cells[0];
+    heap->cells[0] = heap->cells[--heap->size];
+    
+    int i = 0;
+    while (i * 2 + 1 < heap->size) {
+        int left = i * 2 + 1;
+        int right = i * 2 + 2;
+        int smallest = i;
+        
+        if (left < heap->size && heap->cells[left].cost < heap->cells[smallest].cost) {
+            smallest = left;
+        }
+        if (right < heap->size && heap->cells[right].cost < heap->cells[smallest].cost) {
+            smallest = right;
+        }
+        if (smallest == i) break;
+        
+        swap(&heap->cells[i], &heap->cells[smallest]);
+        i = smallest;
+    }
+    
+    return min;
+}
+
+// Hàm kiểm tra xem ô có nằm trong ranh giới không
+int isValid(int x, int y, int M, int N) {
+    return (x >= 0 && x < M && y >= 0 && y < N);
+}
+
+// Hàm tìm chi phí thấp nhất để robot di chuyển trong mê cung
+int dijkstra(int maze[MAX][MAX], int M, int N) {
+    int cost[MAX][MAX];
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < N; j++) {
+            cost[i][j] = INT_MAX; // Khởi tạo chi phí là vô cùng
+        }
+    }
+    
+    MinHeap heap;
+    initMinHeap(&heap);
+    insert(&heap, 0, 0, maze[0][0]); // Bắt đầu tại ô (0, 0)
+    cost[0][0] = maze[0][0];
+
+    int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; // Các hướng di chuyển: lên, xuống, trái, phải
+
+    while (heap.size > 0) {
+        Cell current = extractMin(&heap);
+
+        // Nếu đã đến đích
+        if (current.x == M - 1 && current.y == N - 1) {
+            return current.cost;
+        }
+
+        // Thử tất cả các hướng
+        for (int i = 0; i < 4; i++) {
+            int newX = current.x + directions[i][0];
+            int newY = current.y + directions[i][1];
+
+            if (isValid(newX, newY, M, N)) {
+                int newCost = current.cost + maze[newX][newY];
+
+                // Cập nhật chi phí nếu tìm được đường đi tốt hơn
+                if (newCost < cost[newX][newY]) {
+                    cost[newX][newY] = newCost;
+                    insert(&heap, newX, newY, newCost);
+                }
+            }
+        }
+    }
+
+    return -1; // Trả về -1 nếu không tìm thấy đường đi
+}
+
+// Hàm chính
+int main() {
+    int M, N;
+    int maze[MAX][MAX];
+
+    // Đọc kích thước của mê cung
+    scanf("%d%d", &M, &N);
+
+    // Đọc các số trong mê cung
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < N; j++) {
+            scanf("%d", &maze[i][j]);
+        }
+    }
+
+    // Tính toán chi phí thấp nhất
+    int result = dijkstra(maze, M, N);
+
+    // In ra kết quả
+    printf("%d\n", result);
+
+    return 0;
+}

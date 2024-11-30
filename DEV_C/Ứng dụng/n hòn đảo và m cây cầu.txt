@@ -1,0 +1,96 @@
+Có n hòn đảo và m cây cầu. Mỗi cây cầu bắt qua 2 hòn đảo. Một hôm chúa đảo tự hỏi là với các cây cầu hiện tại thì đứng ở một hòn đảo bất kỳ có thể nào đi đến được tất cả các hòn đảo khác mà không cần dùng đến thuyền hay không.
+
+Hãy giúp chúa đảo viết chương trình kiểm tra.
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đảo và số cây cầu.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u v nói rằng có 1 cây cầu bắt qua hai hòn đảo u và v.
+Đầu ra (Output):
+
+Nếu có thể đi được in ra màn hình YES, ngược lại in ra NO.
+For example:
+
+Input	Result
+4 3	YES
+1 2
+2 3
+3 4
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_ISLANDS 100
+
+typedef struct {
+    int n; // Số đảo
+    int adj[MAX_ISLANDS][MAX_ISLANDS]; // Ma trận kề
+    int visited[MAX_ISLANDS]; // Mảng lưu trạng thái đã duyệt
+} Graph;
+
+// Khởi tạo đồ thị
+void init_graph(Graph* G, int n) {
+    G->n = n;
+    for (int i = 1; i <= n; i++) {
+        G->visited[i] = 0; // Đánh dấu tất cả các đảo chưa được duyệt
+        for (int j = 1; j <= n; j++) {
+            G->adj[i][j] = 0; // Khởi tạo ma trận kề
+        }
+    }
+}
+
+// Thêm cầu vào đồ thị
+void add_edge(Graph* G, int u, int v) {
+    G->adj[u][v] = 1;
+    G->adj[v][u] = 1; // Đồ thị vô hướng
+}
+
+// Hàm duyệt DFS
+void dfs(Graph* G, int u) {
+    G->visited[u] = 1; // Đánh dấu đảo u đã được duyệt
+    for (int v = 1; v <= G->n; v++) {
+        if (G->adj[u][v] && !G->visited[v]) { // Nếu v là đảo kề chưa được duyệt
+            dfs(G, v);
+        }
+    }
+}
+
+// Hàm kiểm tra tính liên thông
+int is_connected(Graph* G) {
+    dfs(G, 1); // Bắt đầu từ đảo 1
+    for (int i = 1; i <= G->n; i++) {
+        if (!G->visited[i]) { // Nếu có đảo chưa được duyệt
+            return 0; // Không liên thông
+        }
+    }
+    return 1; // Liên thông
+}
+
+int main() {
+    Graph G;
+    int n, m, u, v;
+
+    // Nhập số đảo và số cầu
+    scanf("%d%d", &n, &m);
+    init_graph(&G, n);
+
+    // Nhập các cầu
+    for (int e = 0; e < m; e++) {
+        scanf("%d%d", &u, &v);
+        add_edge(&G, u, v);
+    }
+
+    // Kiểm tra tính liên thông
+    if (is_connected(&G)) {
+        printf("YES\n");
+    } else {
+        printf("NO\n");
+    }
+
+    return 0;
+}
+

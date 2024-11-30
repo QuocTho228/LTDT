@@ -1,0 +1,26 @@
+Cho cấu trúc dữ liệu đồ thị (Graph) được khai báo sử dụng ma trận đỉnh - cung như sau:
+
+typedef struct {
+    int A[100][500];
+    int m, n;
+} Graph;
+Giả sử đồ thị vô hướng, có đa cung và có chứa khuyên. Để biểu diễn khuyên e = (x, x), ta gán A[x][e] = 2.
+
+Viết hàm add_edge(Graph* G, int e, int x, int y) để thêm cung e = (x, y) vào đồ thị G.
+
+void add_edge(Graph* G, int e, int x, int y)  {
+}
+
+
+
+void add_edge(Graph *G, int e, int x, int y){
+    if (x == y){
+    G->A[x][e] = 2;
+    }
+    else{
+        G->A[x][e] = 1;
+        G->A[y][e] = 1;
+    }
+}
+
+

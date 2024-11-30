@@ -1,0 +1,41 @@
+Cho cấu trúc dữ liệu đồ thị Graph được cài đặt bằng phương pháp "Ma trận kề" dùng để lưu trữ các đồ thị có hướng (có thể chứa đa cung và chứa khuyên).
+
+```#define MAX_N 100
+typedef struct {
+    int n, m;
+    int A[MAX_N][MAX_N];
+} Graph;
+```
+Viết hàm int outdegree(Graph *pG, int u) để tính bậc vào của đỉnh theo mẫu (prototype):
+
+```int outdegree(Graph *pG, int u) {
+}```
+Chú ý
+
+Các tham số của hàm outdegree() luôn hợp lệ (1≤u≤n)
+, bạn không cần kiểm tra.
+Không nộp toàn bộ chương trình, chỉ nộp phần định nghĩa hàm outdegree().
+For example:
+
+Input	
+4 4
+1 3
+4 2
+3 1
+1 1
+
+Result
+deg_out(1) = 2
+deg_out(2) = 0
+deg_out(3) = 1
+deg_out(4) = 1
+
+
+
+int outdegree(Graph *pG, int u) {
+    int out_deg = 0;
+    for (int v = 1; v <= pG->n; v++) {
+        out_deg += pG->A[u][v]; // Tính tổng số cung xuất phát từ đỉnh u
+    }
+    return out_deg;
+}

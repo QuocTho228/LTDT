@@ -1,0 +1,4 @@
+void init_graph(Graph *pG, int n) {
+    pG->n = n;   // Gán số đỉnh
+    pG->m = 0;   // Gán số cung ban đầu là 0
+}

@@ -1,0 +1,74 @@
+Viết chương trình đọc vào một đơn đồ thị có hướng và kiểm tra xem nó có chứa chu trình hay không.
+
+Nhắc lại: Chu trình là một đường đi có đỉnh đầu trùng với đỉnh cuối.
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v mô tả cung (u, v).
+Đầu ra (Output):
+
+In ra màn hình CIRCLED nếu đồ thị có chứa chu trình, ngược lại in ra NO CIRCLE
+Xem thêm ví dụ bên dưới.
+For example:
+
+Input	
+3 3  
+1 3
+3 2
+2 1
+
+Result
+CIRCLED
+
+
+#include <stdio.h>
+
+#define MAX_N 1000
+
+int n, m;  // số đỉnh và số cung
+int adj[MAX_N][MAX_N];  // ma trận kề
+int visited[MAX_N];  // trạng thái của đỉnh (0: UNVISITED, 1: VISITING, 2: VISITED)
+
+int dfs(int u) {
+    visited[u] = 1;  // Đánh dấu đỉnh u là đang thăm (VISITING)
+    
+    for (int v = 1; v <= n; v++) {
+        if (adj[u][v]) {
+            if (visited[v] == 1) {  // Nếu đỉnh v đang thăm, tức là gặp chu trình
+                return 1;
+            }
+            if (visited[v] == 0 && dfs(v)) {  // Nếu đỉnh v chưa thăm và có chu trình từ v
+                return 1;
+            }
+        }
+    }
+
+    visited[u] = 2;  // Đánh dấu đỉnh u là đã thăm (VISITED)
+    return 0;
+}
+
+int main() {
+    // Đọc vào số đỉnh và số cung
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo ma trận kề
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;  // Đánh dấu có cung từ u đến v
+    }
+
+    // Kiểm tra tất cả các đỉnh để tìm chu trình
+    for (int i = 1; i <= n; i++) {
+        if (visited[i] == 0 && dfs(i)) {
+            printf("CIRCLED\n");
+            return 0;
+        }
+    }
+
+    printf("NO CIRCLE\n");
+    return 0;
+}

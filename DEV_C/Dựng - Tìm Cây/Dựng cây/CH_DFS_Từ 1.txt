@@ -1,0 +1,154 @@
+Cho một đồ thị có hướng đơn. Hãy dựng (các) cây DUYỆT ĐỒ THỊ khi duyệt đồ thị theo chiều sâu bắt đầu từ đỉnh 1.
+
+Nếu vẫn còn đỉnh chưa duyệt sau khi duyệt xong lần 1, tìm đỉnh có chỉ số nhỏ nhất chưa duyệt mà duyệt nó, và cứ tiếp tục như thế cho đến khi tất cả các đỉnh đều được duyệt.
+
+Quy ước:
+
+Các đỉnh kề của 1 đỉnh được liệt kê theo thứ tự tăng dần
+Nếu cài đặt dùng ngăn xếp hãy đưa các đỉnh kề của đỉnh u vào ngăn xếp theo thứ tự từ lớn đến nhỏ
+Đầu vào (Input)
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra cây duyệt đồ thị theo định dạng:
+```lang:cpp;;
+1 <đỉnh cha của 1>
+2 <đỉnh cha của 2>
+....
+i <đỉnh cha của i>
+...
+n <đỉnh cha của n>```
+Nếu 1 đỉnh không có đỉnh cha (nó là đỉnh gốc của cây) thì đỉnh cha của nó là -1.
+Xem thêm các ví dụ bên dưới.
+Gợi ý
+
+Sử dụng mảng parent[u] để lưu đỉnh cha của đỉnh u.
+Trong quá trình duyệt, thay vì in các đỉnh ra màn hình, ghi nhận lại đỉnh cha của các đỉnh.
+Khi duyệt xong lần lượt in ra u và parent[u] (u chạy từ 1 đến n).
+Hướng dẫn đọc dữ liệu và chạy thử chương trình
+
+Để chạy thử chương trình, bạn nên tạo một tập tin dt.txt chứa đồ thị cần kiểm tra.
+Thêm dòng freopen("dt.txt", "r", stdin); vào ngay sau hàm main(). Khi nộp bài, nhớ gỡ bỏ dòng này ra.
+Có thể sử dụng đoạn chương trình đọc dữ liệu mẫu sau đây:
+```lang:cpp;;
+freopen("dt.txt", "r", stdin); //Khi nộp bài nhớ bỏ dòng này.
+Graph G;
+int n, m, u, v, w, e;
+scanf("%d%d", &n, &m);
+init_graph(&G, n);
+
+for (e = 0; e < m; e++) {
+    scanf("%d%d", &u, &v);
+    add_edge(&G, u, v);
+}
+```
+For example:
+
+Input	
+4 3
+2 1
+1 4
+2 4
+
+Result
+1 -1
+2 -1
+3 -1
+4 1
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 1000 // Giới hạn số đỉnh tối đa
+
+typedef struct {
+    int edges[MAX][MAX]; // Ma trận kề
+    int n;               // Số đỉnh
+} Graph;
+
+// Khởi tạo đồ thị
+void init_graph(Graph *G, int n) {
+    G->n = n;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            G->edges[i][j] = 0;
+        }
+    }
+}
+
+// Thêm cung vào đồ thị
+void add_edge(Graph *G, int u, int v) {
+    G->edges[u - 1][v - 1] = 1;
+}
+
+// Hàm duyệt DFS với ngăn xếp
+void DFS(Graph *G, int start, int parent[], int visited[]) {
+    int stack[MAX], top = -1;
+
+    // Đưa đỉnh bắt đầu vào ngăn xếp
+    stack[++top] = start;
+    parent[start] = -1; // Đỉnh bắt đầu là gốc
+
+    while (top >= 0) {
+        int u = stack[top--]; // Lấy đỉnh trên cùng của ngăn xếp
+        if (visited[u]) {
+            continue;
+        }
+        visited[u] = 1;
+
+        // Đưa các đỉnh kề của u vào ngăn xếp (theo thứ tự từ lớn đến nhỏ)
+        for (int v = G->n - 1; v >= 0; v--) {
+            if (G->edges[u][v] && !visited[v]) {
+                stack[++top] = v;
+                if (parent[v] == -1) { // Nếu đỉnh chưa được duyệt
+                    parent[v] = u + 1; // Lưu đỉnh cha
+                }
+            }
+        }
+    }
+}
+
+// Hàm tìm cây duyệt DFS
+void find_DFS_tree(Graph *G) {
+    int visited[MAX] = {0};
+    int parent[MAX];
+    for (int i = 0; i < G->n; i++) {
+        parent[i] = -1; // Khởi tạo cha của tất cả các đỉnh là -1
+    }
+
+    // Duyệt toàn bộ đồ thị
+    for (int i = 0; i < G->n; i++) {
+        if (!visited[i]) {
+            DFS(G, i, parent, visited);
+        }
+    }
+
+    // In kết quả
+    for (int i = 0; i < G->n; i++) {
+        printf("%d %d\n", i + 1, parent[i]);
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d%d", &n, &m);
+
+    Graph G;
+    init_graph(&G, n);
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d%d", &u, &v);
+        add_edge(&G, u, v);
+    }
+
+    find_DFS_tree(&G);
+
+    return 0;
+}
+

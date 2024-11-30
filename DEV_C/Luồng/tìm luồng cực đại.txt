@@ -1,0 +1,164 @@
+Viết chương trình tìm luồng cực đại trên mạng bằng thuật toán Ford - Fulkerson (duyệt theo chiều rộng).
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w.
+Đầu ra (Output)
+
+In ra màn hình theo định dạng sau:
+
+Dòng đầu tiên in luồng cực đại theo dạng: Max flow: f với f là giá trị luồng cực đại
+Dòng thứ hai in các đỉnh của S theo dạng: S: x1 x2 ..., mỗi đỉnh cách nhau 1 khoảng trắng. In các đỉnh theo thứ tự từ nhỏ đến lớn.
+Dòng thứ ba in các đỉnh của T theo dạng: T: y1 y2 ..., mỗi đỉnh cách nhau 1 khoảng trắng. In các đỉnh theo thứ tự từ nhỏ đến lớn.
+Xem thêm ví dụ trong phần For example.
+
+For example:
+
+Input	
+3 3  
+1 2 9
+2 3 4
+1 3 4
+
+Result
+Max flow: 8
+S: 1 2
+T: 3
+
+
+
+#include <stdio.h>
+#include <limits.h>
+#include <string.h>
+
+#define MAX_N 1000
+#define INF INT_MAX
+
+// Định nghĩa cấu trúc đồ thị
+int capacity[MAX_N][MAX_N];  // Ma trận dung lượng
+int flow[MAX_N][MAX_N];      // Ma trận luồng
+int adj[MAX_N][MAX_N];       // Ma trận kề của đồ thị
+int adj_size[MAX_N];         // Mảng lưu kích thước của các danh sách kề
+
+// Hàm tìm kiếm theo chiều rộng (BFS) để tìm đường tăng dần
+int bfs(int n, int source, int sink, int parent[]) {
+    int visited[MAX_N] = {0};
+    int queue[MAX_N];
+    int front = 0, rear = 0;
+
+    // Đưa nguồn vào hàng đợi
+    queue[rear++] = source;
+    visited[source] = 1;
+
+    while (front < rear) {
+        int u = queue[front++];
+        
+        for (int v = 1; v <= n; v++) {
+            if (!visited[v] && capacity[u][v] - flow[u][v] > 0) {
+                queue[rear++] = v;
+                visited[v] = 1;
+                parent[v] = u;
+                
+                if (v == sink) {
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+// Hàm chính tìm luồng cực đại bằng thuật toán Ford-Fulkerson
+int fordFulkerson(int n, int source, int sink) {
+    int parent[MAX_N];
+    int max_flow = 0;
+
+    // Duyệt tìm các đường tăng dần
+    while (bfs(n, source, sink, parent)) {
+        int path_flow = INF;
+        
+        // Tìm dòng chảy tối thiểu trong đường đi
+        for (int v = sink; v != source; v = parent[v]) {
+            int u = parent[v];
+            path_flow = (path_flow < capacity[u][v] - flow[u][v]) ? path_flow : (capacity[u][v] - flow[u][v]);
+        }
+        
+        // Cập nhật luồng cho tất cả các cung trong đường đi
+        for (int v = sink; v != source; v = parent[v]) {
+            int u = parent[v];
+            flow[u][v] += path_flow;
+            flow[v][u] -= path_flow;
+        }
+        
+        max_flow += path_flow;
+    }
+    
+    return max_flow;
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+    
+    int source = 1, sink = n;
+    
+    // Khởi tạo ma trận dung lượng và danh sách kề
+    memset(capacity, 0, sizeof(capacity));
+    memset(adj_size, 0, sizeof(adj_size));
+    
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        scanf("%d %d %d", &u, &v, &w);
+        adj[u][adj_size[u]++] = v;
+        adj[v][adj_size[v]++] = u;  // Đồ thị vô hướng
+        capacity[u][v] += w;  // Cộng thêm dung lượng nếu có nhiều cung giữa hai đỉnh
+    }
+
+    // Tìm luồng cực đại
+    int max_flow = fordFulkerson(n, source, sink);
+    
+    // Tìm các đỉnh trong S và T bằng cách duyệt theo BFS từ nguồn
+    int visited[MAX_N] = {0};
+    int queue[MAX_N];
+    int front = 0, rear = 0;
+
+    queue[rear++] = source;
+    visited[source] = 1;
+    
+    while (front < rear) {
+        int u = queue[front++];
+        
+        for (int i = 0; i < adj_size[u]; i++) {
+            int v = adj[u][i];
+            if (!visited[v] && capacity[u][v] - flow[u][v] > 0) {
+                visited[v] = 1;
+                queue[rear++] = v;
+            }
+        }
+    }
+    
+    // In kết quả
+    printf("Max flow: %d\n", max_flow);
+    
+    printf("S: ");
+    for (int i = 1; i <= n; i++) {
+        if (visited[i]) {
+            printf("%d ", i);
+        }
+    }
+    printf("\n");
+
+    printf("T: ");
+    for (int i = 1; i <= n; i++) {
+        if (!visited[i]) {
+            printf("%d ", i);
+        }
+    }
+    printf("\n");
+    
+    return 0;
+}
+

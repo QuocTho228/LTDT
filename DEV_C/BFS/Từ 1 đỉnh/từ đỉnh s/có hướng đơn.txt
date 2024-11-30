@@ -1,0 +1,134 @@
+Cho một đồ thị có hướng đơn. Hãy in ra các đỉnh theo thứ tự duyệt khi duyệt đồ thị theo chiều rộng bắt đầu từ đỉnh s.
+
+Quy ước:
+
+Các đỉnh kề của 1 đỉnh được liệt kê theo thứ tự tăng dần
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u v mô tả cung (u, v).
+Dòng cuối cùng chứa số nguyên s.
+Đầu ra (Output)
+
+In ra các đỉnh theo thứ tự duyệt, mỗi đỉnh trên 1 dòng.
+
+Xem thêm các ví dụ bên dưới.
+
+
+
+Hướng dẫn đọc dữ liệu và chạy thử chương trình
+
+Để chạy thử chương trình, bạn nên tạo một tập tin dt.txt chứa đồ thị cần kiểm tra.
+Thêm dòng freopen("dt.txt", "r", stdin); vào ngay sau hàm main(). Khi nộp bài, nhớ gỡ bỏ dòng này ra.
+Có thể sử dụng đoạn chương trình đọc dữ liệu mẫu sau đây:
+```lang:cpp;;
+freopen("dt.txt", "r", stdin); //Khi nộp bài nhớ bỏ dòng này.
+Graph G;
+int n, m, u, v, w, e;
+scanf("%d%d", &n, &m);
+init_graph(&G, n);
+	
+for (e = 0; e < m; e++) {
+    scanf("%d%d", &u, &v);
+    add_edge(&G, u, v);
+}```
+For example:
+
+Input	
+4 3
+2 1
+1 3
+2 4
+2
+
+Result
+2
+1
+4
+3
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_NODES 100
+
+// Danh sách kề
+int adj[MAX_NODES][MAX_NODES];  // Ma trận kề
+int visited[MAX_NODES];          // Mảng đánh dấu các đỉnh đã thăm
+
+// Khai báo hàng đợi (queue) và các chỉ số
+int queue[MAX_NODES];
+int front = 0, rear = 0;
+
+// Hàm thêm phần tử vào hàng đợi
+void enqueue(int x) {
+    queue[rear++] = x;
+}
+
+// Hàm lấy phần tử ra khỏi hàng đợi
+int dequeue() {
+    return queue[front++];
+}
+
+// Hàm kiểm tra hàng đợi có rỗng không
+int is_empty() {
+    return front == rear;
+}
+
+// Hàm BFS
+void bfs(int start, int n) {
+    enqueue(start);        // Đưa đỉnh xuất phát vào hàng đợi
+    visited[start] = 1;    // Đánh dấu đỉnh xuất phát là đã thăm
+
+    while (!is_empty()) {
+        int u = dequeue();  // Lấy đỉnh u từ hàng đợi
+        printf("%d\n", u);   // In đỉnh u ra
+
+        // Duyệt qua các đỉnh kề của u
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v] == 1 && !visited[v]) {  // Nếu có cung từ u -> v
+                visited[v] = 1;  // Đánh dấu v đã thăm
+                enqueue(v);      // Thêm v vào hàng đợi
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m, u, v, s;
+
+    // Đọc số đỉnh và số cung
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo ma trận kề
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            adj[i][j] = 0;  // Khởi tạo ma trận kề là 0
+        }
+    }
+
+    // Đọc các cung và tạo đồ thị dưới dạng ma trận kề
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;  // Có cung từ u -> v
+    }
+
+    // Đọc đỉnh xuất phát s
+    scanf("%d", &s);
+
+    // Khởi tạo mảng visited
+    for (int i = 1; i <= n; i++) {
+        visited[i] = 0;  // Đánh dấu tất cả các đỉnh chưa thăm
+    }
+
+    // Duyệt đồ thị theo BFS bắt đầu từ đỉnh s
+    bfs(s, n);
+
+    return 0;
+}
+
+

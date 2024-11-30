@@ -1,0 +1,39 @@
+Cho cấu trúc dữ liệu đồ thị Graph được cài đặt bằng phương pháp "Ma  trận kề" dùng để lưu trữ các đơn đồ thị vô hướng.
+
+```#define MAX_N 100
+typedef struct {
+    int n, m;
+    int A[MAX_N][MAX_N];
+} Graph;
+```
+Viết hàm add_edge(Graph *pG, int u, int v) để thêm cung (u, v) vào đồ thị pG theo mẫu (prototype):
+
+```void add_edge(Graph *pG, int u, int v) {
+}```
+Chú ý
+
+Các tham số của hàm add_edge() luôn hợp lệ (1≤u,v≤n)
+, bạn không cần kiểm tra.
+Không nộp toàn bộ chương trình, chỉ nộp phần định nghĩa hàm add_edge().
+For example:
+
+Input	
+4 3
+1 3
+4 2
+3 4
+
+Result
+Ma tran ke:
+0 0 1 0
+0 0 0 1
+1 0 0 1
+0 1 1 0
+
+
+
+void add_edge(Graph *pG, int u, int v) {
+    // Tăng giá trị tại A[u][v] và A[v][u] để biểu diễn cung (u, v) và (v, u)
+    pG->A[u][v] = 1;
+    pG->A[v][u] = 1;
+}

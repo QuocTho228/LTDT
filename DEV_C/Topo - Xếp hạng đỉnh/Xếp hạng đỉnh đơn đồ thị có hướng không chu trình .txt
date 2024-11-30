@@ -1,0 +1,93 @@
+Viết chương trình đọc vào một đơn đồ thị có hướng không chu trình, xếp hạng các đỉnh và in hạng của các đỉnh ra màn hình.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra màn hình hạng của các đỉnh theo thứ tự của đỉnh, mỗi đỉnh trên 1 dòng theo mẫu:
+```r[1] = abc
+r[2] = xyz
+...```
+Xem thêm ví dụ bên dưới. Trong ví dụ đầu tiên ta có: hạng của 1 = 0, hạng của 2 = 2 và hạng của 3 = 1.
+
+For example:
+
+Input	
+3 2  
+1 3
+3 2
+
+Result
+r[1] = 0
+r[2] = 2
+r[3] = 1
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 1000
+
+int n, m; // Số đỉnh và số cung
+int adj[MAX][MAX]; // Ma trận kề
+int indegree[MAX]; // Số lượng phụ thuộc của mỗi đỉnh
+int rank[MAX]; // Hạng của các đỉnh
+
+void read_input() {
+    scanf("%d %d", &n, &m);
+    memset(adj, 0, sizeof(adj));
+    memset(indegree, 0, sizeof(indegree));
+    memset(rank, -1, sizeof(rank));
+
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1; // Đánh dấu cung từ u -> v
+        indegree[v]++;
+    }
+}
+
+void calculate_rank() {
+    int queue[MAX], front = 0, rear = 0;
+
+    // Đưa các đỉnh không phụ thuộc (indegree = 0) vào hàng đợi
+    for (int i = 1; i <= n; i++) {
+        if (indegree[i] == 0) {
+            queue[rear++] = i;
+            rank[i] = 0; // Hạng của các đỉnh không phụ thuộc là 0
+        }
+    }
+
+    // Duyệt Topological Sort
+    while (front < rear) {
+        int u = queue[front++];
+
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v]) {
+                indegree[v]--;
+                if (indegree[v] == 0) {
+                    queue[rear++] = v;
+                    rank[v] = rank[u] + 1; // Hạng của v = hạng của u + 1
+                }
+            }
+        }
+    }
+}
+
+void print_rank() {
+    for (int i = 1; i <= n; i++) {
+        printf("r[%d] = %d\n", i, rank[i]);
+    }
+}
+
+int main() {
+    read_input();
+    calculate_rank();
+    print_rank();
+    return 0;
+}

@@ -1,0 +1,82 @@
+Viết chương trình đọc vào một đồ thị vô hướng và kiểm tra xem nó có phải là đồ thị phân đôi không.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung của đồ thị.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u v, cách nhau 1 khoảng trắng, mô tả cung (u, v).
+Đầu ra (Output)
+
+Nếu đồ thị là đồ thị phân đôi, in ra YES, ngược lại in ra NO.
+Xem thêm các ví dụ bên dưới.
+For example:
+
+Input	Result
+3 2	YES
+1 2
+2 3
+
+3 3	NO
+1 2
+2 3
+3 1
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAXN 1000
+
+int n, m;  // số đỉnh và số cung
+int adj[MAXN][MAXN];  // ma trận kề
+int color[MAXN];  // mảng lưu màu của các đỉnh, -1 là chưa màu
+
+// Hàm DFS để kiểm tra đồ thị phân đôi
+int dfs(int u, int col) {
+    color[u] = col;  // Gán màu cho đỉnh u
+    for (int v = 1; v <= n; v++) {
+        if (adj[u][v]) {  // Nếu có cạnh (u, v)
+            if (color[v] == -1) {  // Nếu đỉnh v chưa được màu
+                if (!dfs(v, 1 - col))  // Gọi đệ quy với màu ngược lại
+                    return 0;
+            } else if (color[v] == color[u]) {  // Nếu đỉnh v cùng màu với u
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int main() {
+    // Đọc dữ liệu đầu vào
+    scanf("%d %d", &n, &m);
+    
+    // Khởi tạo ma trận kề và mảng màu
+    for (int i = 1; i <= n; i++) {
+        color[i] = -1;  // Mỗi đỉnh ban đầu chưa có màu
+        for (int j = 1; j <= n; j++) {
+            adj[i][j] = 0;  // Khởi tạo ma trận kề không có cung
+        }
+    }
+
+    // Đọc các cạnh và xây dựng ma trận kề
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = adj[v][u] = 1;  // Đồ thị vô hướng
+    }
+
+    // Kiểm tra từng đỉnh xem có phải đồ thị phân đôi không
+    for (int i = 1; i <= n; i++) {
+        if (color[i] == -1) {  // Nếu đỉnh chưa được màu
+            if (!dfs(i, 0)) {  // Bắt đầu từ màu 0
+                printf("NO\n");
+                return 0;
+            }
+        }
+    }
+
+    printf("YES\n");
+    return 0;
+}

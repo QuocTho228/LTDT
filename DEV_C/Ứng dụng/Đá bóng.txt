@@ -1,0 +1,122 @@
+Trong một giải đấu bóng đá gồm n đội bóng, đánh số từ 1 đến n. Mỗi trận đấu có hai đội thi đấu với nhau cho đến khi phân biệt thắng thua (ví dụ: hiệp phụ, đá luân lưu). Sau khi giải đấu kết thúc, ban tổ chức muốn xếp hạng các đội theo quy tắc sau:
+
+Hạng được tính từ 1, 2, 3, ...
+Đội không thua trận nào xếp hạng 1
+Nếu đội A đá thắng đội B thì hạng của đội A nhỏ hơn hạng của đội B.
+Nếu một đội có thể nhận nhiều hạng khác nhau thì chọn hạng nhỏ nhất.
+Hoặc bạn cũng có thể sử dụng định nghĩa sau:
+
+Hạng(v) = max {Hạng(u) } + 1
+
+với u là đội thắng v.
+
+Hãy giúp ban tổ chức viết chương trình xếp hạng cho các đội. Giả sử không xảy ra trường hợp A thắng B, B thắng C ,..., Z thắng A.
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đội và số trận đấu.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u v mô tả kết quả trận đấu: u thắng, v thua.
+Đầu ra (Output):
+
+In ra màn hình hạng của các đội bóng theo số thứ tự của đội trên cùng 1 dòng, mỗi đội cách nhau 1 khoảng trắng.
+<Hạng đội 1> <Hạng đội 2> ... <Hạng đội n>
+
+Xem thêm ví dụ bên dưới. Trong ví dụ đầu tiên ta có: hạng của 1 = 1, hạng của 2 = 3 và hạng của 3 = 2.
+
+Trong ví dụ 2: đội 2 có thể nhận hạng 2 hoặc 3 nên xếp hạng 2, tương tự như thế cho đội 4.
+
+For example:
+
+Input	Result
+3 2	1 3 2  
+1 3
+3 2
+
+7 10	1 2 4 2 3 3 5
+1 2
+1 3
+1 4
+2 3
+2 6
+3 7
+4 5
+5 3
+5 7
+6 7
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAXN 1000
+
+int n, m;  // n: số đội, m: số trận đấu
+int rank[MAXN];  // mảng lưu hạng của các đội
+int adj[MAXN][MAXN];  // đồ thị: adj[u][v] = 1 nếu u thắng v
+int inDegree[MAXN];  // bậc vào của các đội
+int queue[MAXN];  // hàng đợi để thực hiện topological sort
+
+// Hàm tính hạng các đội
+void topologicalSort() {
+    int head = 0, tail = 0;
+    
+    // Khởi tạo hàng đợi với tất cả các đội có bậc vào = 0
+    for (int i = 1; i <= n; i++) {
+        if (inDegree[i] == 0) {
+            queue[tail++] = i;
+            rank[i] = 1;  // ban đầu hạng của mỗi đội là 1
+        }
+    }
+
+    // Tiến hành topological sort
+    while (head < tail) {
+        int u = queue[head++];
+        
+        // Duyệt các đội mà đội u đã thắng
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v]) {
+                inDegree[v]--;  // giảm bậc vào của đội v
+                if (rank[v] < rank[u] + 1) {
+                    rank[v] = rank[u] + 1;  // cập nhật hạng của đội v
+                }
+                if (inDegree[v] == 0) {
+                    queue[tail++] = v;  // nếu bậc vào của v là 0 thì cho vào hàng đợi
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    // Đọc đầu vào
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo đồ thị và bậc vào
+    for (int i = 1; i <= n; i++) {
+        inDegree[i] = 0;
+        for (int j = 1; j <= n; j++) {
+            adj[i][j] = 0;
+        }
+    }
+
+    // Đọc các trận đấu và xây dựng đồ thị
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;  // u thắng v
+        inDegree[v]++;  // v bị yêu cầu kẹo hơn
+    }
+
+    // Thực hiện topological sort và tính hạng
+    topologicalSort();
+
+    // In kết quả hạng của các đội
+    for (int i = 1; i <= n; i++) {
+        printf("%d ", rank[i]);
+    }
+    printf("\n");
+
+    return 0;
+}

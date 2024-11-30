@@ -1,0 +1,141 @@
+Viết chương trình đọc đồ thị vô hướng liên thông và tìm cây khung có trọng số nhỏ nhất bằng thuật toán Kruskal.
+
+Đầu vào
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w.
+Đầu ra
+
+In ra màn hình trọng số của cây khung tìm được và danh sách các cung theo thứ tự tăng dần của trọng số.
+Các cung được in theo định dạng:
+u v w
+
+với (u < v), mỗi cung trên 1 dòng. Nếu hai cung có trọng số bằng nhau thì cung nào có u nhỏ hơn sẽ được in trước. Nếu có trọng số bằng nhau và u giống nhau thì cung nào có v nhỏ hơn sẽ in trước.
+
+Xem thêm ví dụ trong phần For example.
+
+
+
+For example:
+
+Input	
+4 4
+1 2 3
+2 3 6
+4 3 1
+1 4 9
+
+Result
+10
+3 4 1
+1 2 3
+2 3 6
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+#define MAX_M 10000
+
+// Cấu trúc cho mỗi cung
+typedef struct {
+    int u, v, w;
+} Edge;
+
+// Cấu trúc cho Disjoint Set Union (DSU)
+int parent[MAX_N], rank[MAX_N];
+
+// Hàm tìm đại diện của một tập hợp
+int find(int x) {
+    if (parent[x] != x) {
+        parent[x] = find(parent[x]);  // Đường dẫn nén
+    }
+    return parent[x];
+}
+
+// Hàm hợp nhất hai tập hợp
+void unionSet(int x, int y) {
+    int rootX = find(x);
+    int rootY = find(y);
+
+    if (rootX != rootY) {
+        // Gắn cây có độ sâu thấp hơn làm con của cây có độ sâu cao hơn
+        if (rank[rootX] > rank[rootY]) {
+            parent[rootY] = rootX;
+        } else if (rank[rootX] < rank[rootY]) {
+            parent[rootX] = rootY;
+        } else {
+            parent[rootY] = rootX;
+            rank[rootX]++;
+        }
+    }
+}
+
+// Hàm so sánh hai cung để sắp xếp theo trọng số, sau đó theo u, rồi v
+int compare(const void *a, const void *b) {
+    Edge *edge1 = (Edge *)a;
+    Edge *edge2 = (Edge *)b;
+
+    if (edge1->w != edge2->w) {
+        return edge1->w - edge2->w;
+    } else if (edge1->u != edge2->u) {
+        return edge1->u - edge2->u;
+    } else {
+        return edge1->v - edge2->v;
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo Disjoint Set Union (DSU)
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+
+    // Đọc các cung
+    Edge edges[m];
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+    }
+
+    // Sắp xếp các cung theo trọng số, rồi theo u và v
+    qsort(edges, m, sizeof(Edge), compare);
+
+    int totalWeight = 0;
+    int count = 0;
+    Edge result[MAX_M];
+
+    // Duyệt qua các cung đã sắp xếp và chọn cung vào cây khung
+    for (int i = 0; i < m; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int w = edges[i].w;
+
+        // Nếu hai đỉnh u và v thuộc về hai tập hợp khác nhau, thì nối chúng
+        if (find(u) != find(v)) {
+            unionSet(u, v);
+            result[count++] = edges[i];
+            totalWeight += w;
+        }
+    }
+
+    // In kết quả
+    printf("%d\n", totalWeight);
+    for (int i = 0; i < count; i++) {
+        // Đảm bảo in u < v
+        if (result[i].u > result[i].v) {
+            int temp = result[i].u;
+            result[i].u = result[i].v;
+            result[i].v = temp;
+        }
+        printf("%d %d %d\n", result[i].u, result[i].v, result[i].w);
+    }
+
+    return 0;
+}

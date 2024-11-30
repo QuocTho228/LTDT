@@ -1,0 +1,105 @@
+Viết chương trình đọc một đồ thị vô hướng từ bàn phím và đếm số bộ phận liên thông của đồ thị.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra số bộ phận liên thông của đồ thị.
+Gợi ý
+
+Xem tài liệu thực hành
+Hướng dẫn đọc dữ liệu và chạy thử chương trình
+
+Để chạy thử chương trình, bạn nên tạo một tập tin dt.txt chứa đồ thị cần kiểm tra.
+Thêm dòng freopen("dt.txt", "r", stdin); vào ngay sau hàm main(). Khi nộp bài, nhớ gỡ bỏ dòng này ra.
+Có thể sử dụng đoạn chương trình đọc dữ liệu mẫu sau đây:
+```lang:cpp;;
+freopen("dt.txt", "r", stdin); //Khi nộp bài nhớ bỏ dòng này.
+Graph G;
+int n, m, u, v, w, e;
+scanf("%d%d", &n, &m);
+init_graph(&G, n);
+
+for (e = 0; e < m; e++) {
+    scanf("%d%d", &u, &v);
+    add_edge(&G, u, v);
+}
+```
+For example:
+
+Input	
+4 3
+2 1
+1 3
+2 4
+
+Result
+1
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAXN 1000
+
+int n, m; // số đỉnh và số cung
+int adj[MAXN][MAXN]; // ma trận kề
+int visited[MAXN]; // mảng đánh dấu các đỉnh đã được duyệt
+
+// Hàm thêm cung vào đồ thị
+void add_edge(int u, int v) {
+    adj[u][v] = 1;
+    adj[v][u] = 1; // Vì đồ thị là vô hướng, nên thêm cung ngược lại
+}
+
+// Hàm DFS để duyệt đồ thị
+void dfs(int u) {
+    visited[u] = 1; // Đánh dấu đỉnh u là đã duyệt
+
+    // Duyệt tất cả các đỉnh kề của u
+    for (int v = 1; v <= n; v++) {
+        if (adj[u][v] && !visited[v]) { // Nếu v kề với u và chưa duyệt
+            dfs(v); // Tiếp tục duyệt theo chiều sâu từ v
+        }
+    }
+}
+
+int main() {
+    // Đọc dữ liệu
+    scanf("%d%d", &n, &m);
+
+    // Khởi tạo ma trận kề và mảng visited
+    for (int i = 0; i <= n; i++) {
+        for (int j = 0; j <= n; j++) {
+            adj[i][j] = 0; // Khởi tạo ma trận kề
+        }
+        visited[i] = 0; // Khởi tạo mảng visited
+    }
+
+    // Đọc các cung và xây dựng đồ thị
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d%d", &u, &v);
+        add_edge(u, v);
+    }
+
+    // Đếm số bộ phận liên thông
+    int component_count = 0;
+    for (int i = 1; i <= n; i++) {
+        if (!visited[i]) { // Nếu đỉnh chưa được duyệt
+            dfs(i); // Duyệt từ đỉnh này
+            component_count++; // Tăng số bộ phận liên thông
+        }
+    }
+
+    // In kết quả
+    printf("%d\n", component_count);
+
+    return 0;
+}
+

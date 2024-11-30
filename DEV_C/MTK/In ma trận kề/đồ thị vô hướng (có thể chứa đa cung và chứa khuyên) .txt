@@ -1,0 +1,101 @@
+Viết chương trình bằng ngôn ngữ C, cho phép người dùng nhập vào một đồ thị vô hướng (có thể chứa đa cung và chứa khuyên) và in ma trận kề của nó ra màn hình.
+
+Biểu diễn đồ thị bằng phương pháp "Ma trận kề".
+
+Đầu vào
+
+Dữ liệu đầu vào được đọc từ dòng nhập chuẩn (stdin, bàn phím) theo định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m cách nhau một khoảng trắng, n: số đỉnh, m: số cung
+m dòng tiếp theo, mỗi dòng chứa 2 số nguyên u v cách nhau 1 khoảng trắng mô tả cung (u, v).
+Đầu ra
+
+
+In ma trận kề của đồ thị đã nhập, các phần tử cách nhau 1 khoảng trắng.
+Chú ý
+
+Giả sử dữ liệu đầu vào luôn hợp lệ, không cần phải kiểm tra
+Nộp toàn bộ chương trình
+Xem thêm định dạng đầu vào và đầu ra trong phần For example
+Ấn "Precheck" (nếu có) để kiểm tra chương trình trên các ví dụ (sai KHÔNG bị trừ điểm)
+Ấn "Check" (nếu có) để kiểm tra chương trình trên toàn bộ dữ liệu kiểm tra (sai bị TRỪ ĐIỂM)
+For example:
+
+Input	
+4 5
+1 3
+4 2
+1 4
+1 1
+3 1
+
+Result
+Ma tran ke:
+1 0 2 1
+0 0 0 1
+2 0 0 0
+1 1 0 0
+
+
+
+#include <stdio.h>
+
+#define MAX_N 100
+
+typedef struct {
+    int n, m;
+    int A[MAX_N][MAX_N];
+} Graph;
+
+// Hàm khởi tạo ma trận kề với tất cả giá trị bằng 0
+void init_graph(Graph *G, int n) {
+    G->n = n;
+    G->m = 0;
+    
+    // Khởi tạo tất cả các phần tử của ma trận kề bằng 0
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            G->A[i][j] = 0;
+        }
+    }
+}
+
+// Hàm thêm cung vào đồ thị (có thể có đa cung và khuyên)
+void add_edge(Graph *G, int u, int v) {
+    if (u == v) {
+        G->A[u-1][v-1] += 1;  // Nếu là khuyên, chỉ cập nhật vị trí (u,u)
+    } else {
+        G->A[u-1][v-1] += 1;  // Cập nhật cung (u, v)
+        G->A[v-1][u-1] += 1;  // Cập nhật cung (v, u) do đồ thị vô hướng
+    }
+    G->m++; // Tăng số lượng cung
+}
+
+int main() {
+    Graph G;
+    int n, m;
+    
+    // Đọc số đỉnh và số cung
+    scanf("%d %d", &n, &m);
+    
+    // Khởi tạo đồ thị
+    init_graph(&G, n);
+
+    // Đọc các cung và thêm vào đồ thị
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        add_edge(&G, u, v);
+    }
+    
+    // In ma trận kề của đồ thị
+    printf("Ma tran ke:\n");
+    for (int i = 0; i < G.n; i++) {
+        for (int j = 0; j < G.n; j++) {
+            printf("%d ", G.A[i][j]);
+        }
+        printf("\n");
+    }
+    
+    return 0;
+}

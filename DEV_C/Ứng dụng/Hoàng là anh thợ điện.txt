@@ -1,0 +1,127 @@
+Hoàng là thợ điện. Anh được thuê sửa lại hệ thống điện cho một căn nhà. Tình trạng hiện tại của hệ thống điện như sau: nguồn điện chính được cung cấp từ đồng hồ điện. Chủ nhà muốn lấy điện từ nguồn điện chính để cấp điện cho n - 1 vị trí trong nhà bằng cách sử dụng dây điện (dĩ nhiên là phải dùng dây điện để dẫn điện rồi smile ). Để đơn giản hoá vấn đề ta có thể xem nguồn điện chính là vị trí 1, các vị trí cần lấy điện được đánh số lần lượt là 2, 3, ..., n. Hoàng có thể dùng dây điện để nối hai vị trí lại với nhau. Ngoài ra, Hoàng còn phải quan tâm đến loại dây điện sử dụng để nối hai vị trí này. Mỗi loại dây lại có một giá thành khác nhau.
+
+Bài toán đặt ra cho Hoàng là sử dụng đây điện và nối dây như thế nào để tất cả các vị trí đều có điện với giá thành mua dây điện rẻ nhất.
+
+Hãy lập trình để giúp Hoàng, anh ta sẽ cảm ơn bạn nhiều lắm !
+
+Đầu vào
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số vị trí (kể cả nguồn điện chính) và số cặp vị trí có thể nối dây điện với nhau.
+m dòng tiếp theo mỗi dòng chứa 4 số nguyên u, v, s, d nói rằng để nối hai vị trí u và v lại với nhau cần tốn s (mét) dây, mỗi mét có giá là d (đơn vị tiền).
+Đầu ra:
+
+In ra màn hình tổng số tiền ít nhất để mua dây điện.
+Xem thêm ví dụ trong phần For example. Trong ví dụ thứ nhất, Hoàng cần nối 1 với 2, 2 với 3 và 3 với 4. Tổng giá thành là: 3*5 + 6*5 + 1*15 = 60.
+
+For example:
+
+Input		Result
+4 4		60
+1 2 3 5
+2 3 6 5
+4 3 1 15
+1 4 9 20
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+#define MAX_M 10000
+
+// Cấu trúc để lưu thông tin các cạnh
+typedef struct {
+    int u, v, cost;  // u, v là hai vị trí, cost là chi phí (chiều dài * giá mỗi mét)
+} Edge;
+
+// Cấu trúc DSU (Disjoint Set Union)
+int parent[MAX_N], rank[MAX_N];
+
+// Hàm khởi tạo DSU
+void initDSU(int n) {
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+}
+
+// Hàm tìm cha của một đỉnh, với tối ưu hóa path compression
+int find(int x) {
+    if (parent[x] != x) {
+        parent[x] = find(parent[x]);
+    }
+    return parent[x];
+}
+
+// Hàm hợp nhất hai tập hợp (union by rank)
+void unionSets(int x, int y) {
+    int rootX = find(x);
+    int rootY = find(y);
+    
+    if (rootX != rootY) {
+        if (rank[rootX] > rank[rootY]) {
+            parent[rootY] = rootX;
+        } else if (rank[rootX] < rank[rootY]) {
+            parent[rootX] = rootY;
+        } else {
+            parent[rootY] = rootX;
+            rank[rootX]++;
+        }
+    }
+}
+
+// Hàm so sánh các cạnh để sắp xếp theo chi phí
+int compareEdges(const void *a, const void *b) {
+    return ((Edge *)a)->cost - ((Edge *)b)->cost;
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    Edge edges[MAX_M];
+    
+    // Đọc thông tin các cạnh
+    for (int i = 0; i < m; i++) {
+        int u, v, s, d;
+        scanf("%d %d %d %d", &u, &v, &s, &d);
+        edges[i].u = u;
+        edges[i].v = v;
+        edges[i].cost = s * d;  // Tính chi phí của mỗi cạnh
+    }
+    
+    // Sắp xếp các cạnh theo chi phí
+    qsort(edges, m, sizeof(Edge), compareEdges);
+
+    // Khởi tạo DSU
+    initDSU(n);
+
+    int totalCost = 0;  // Tổng chi phí của MST
+    int edgeCount = 0;  // Số cạnh đã thêm vào MST
+
+    // Áp dụng thuật toán Kruskal để xây dựng cây khung
+    for (int i = 0; i < m; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int cost = edges[i].cost;
+        
+        // Nếu u và v chưa được nối (không tạo chu trình)
+        if (find(u) != find(v)) {
+            totalCost += cost;  // Thêm chi phí của cạnh vào tổng
+            unionSets(u, v);    // Nối u và v
+            edgeCount++;
+        }
+        
+        // Nếu đã đủ n-1 cạnh, dừng lại
+        if (edgeCount == n - 1) {
+            break;
+        }
+    }
+
+    // In ra tổng chi phí của MST
+    printf("%d\n", totalCost);
+
+    return 0;
+}

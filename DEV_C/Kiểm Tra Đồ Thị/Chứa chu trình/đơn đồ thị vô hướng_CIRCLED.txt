@@ -1,0 +1,80 @@
+Viết chương trình đọc vào một đơn đồ thị vô hướng và kiểm tra xem nó có chứa chu trình hay không.
+
+Nhắc lại: Chu trình là một đường đi có đỉnh đầu trùng với đỉnh cuối.
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v mô tả cung (u, v).
+Đầu ra (Output):
+
+In ra màn hình CIRCLED nếu đồ thị có chứa chu trình, ngược lại in ra NO CIRCLE
+Xem thêm ví dụ bên dưới.
+For example:
+
+Input	
+3 2  
+1 3
+3 2
+
+Result
+NO CIRCLE
+
+
+#include <stdio.h>
+
+#define MAX_N 1000
+
+int n, m;  // số đỉnh và số cung
+int adj[MAX_N][MAX_N];  // ma trận kề
+int visited[MAX_N];  // trạng thái của đỉnh (0: UNVISITED, 1: VISITED)
+int parent[MAX_N];  // Mảng lưu trữ cha của mỗi đỉnh trong DFS
+
+// Hàm kiểm tra chu trình
+int dfs(int u) {
+    visited[u] = 1;  // Đánh dấu đỉnh u là đã thăm
+    
+    for (int v = 1; v <= n; v++) {
+        if (adj[u][v]) {
+            if (visited[v] == 0) {  // Nếu đỉnh v chưa thăm, tiếp tục DFS
+                parent[v] = u;
+                if (dfs(v)) {
+                    return 1;
+                }
+            }
+            // Nếu gặp lại đỉnh đã thăm và đỉnh đó không phải là cha của đỉnh u
+            else if (visited[v] == 1 && v != parent[u]) {
+                return 1;  // Đã tìm thấy chu trình
+            }
+        }
+    }
+    
+    visited[u] = 2;  // Đánh dấu đỉnh u là đã thăm xong
+    return 0;
+}
+
+int main() {
+    // Đọc vào số đỉnh và số cung
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo ma trận kề
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;  // Đánh dấu có cung giữa u và v
+        adj[v][u] = 1;  // Đồ thị vô hướng, nên có cung từ v đến u
+    }
+
+    // Kiểm tra chu trình cho tất cả các đỉnh
+    for (int i = 1; i <= n; i++) {
+        if (visited[i] == 0 && dfs(i)) {
+            printf("CIRCLED\n");
+            return 0;
+        }
+    }
+
+    printf("NO CIRCLE\n");
+    return 0;
+}

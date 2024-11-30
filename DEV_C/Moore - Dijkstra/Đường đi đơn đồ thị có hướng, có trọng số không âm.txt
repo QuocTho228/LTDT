@@ -1,0 +1,117 @@
+Viết chương trình đọc một đơn đồ thị có hướng, có trọng số không âm từ bàn phím, tìm đường đi ngắn nhất từ đỉnh s đến đỉnh t (s và t cũng được đọc từ bàn phím).
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m (1≤n<100;0≤m<500)
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w (0≤w≤100)
+.
+Dòng cuối cùng chứa 2 số nguyên s và t.
+Đầu ra (Output)
+
+In đường đi ngắn nhất từ s đến t theo mẫu:
+```lang:cpp;;
+s -> u1 -> u2 -> ... -> t```
+Xem thêm ví dụ bên dưới.
+Gợi ý
+
+Lần ngược theo p[u] để có được đường đi ngắn nhất.
+For example:
+
+Input	Result
+3 3	1 -> 2 -> 3  
+1 2 3
+2 3 5
+1 3 10
+1 3
+
+
+#include <stdio.h>
+#include <limits.h>
+#include <stdbool.h>
+
+#define MAX_N 100
+#define MAX_M 500
+#define INF INT_MAX
+
+// Cấu trúc đồ thị
+typedef struct {
+    int v, w;
+} Edge;
+
+Edge adj[MAX_N][MAX_N];  // Mảng kề
+int dist[MAX_N];          // Mảng lưu khoảng cách ngắn nhất từ s đến các đỉnh
+int p[MAX_N];             // Mảng lưu đỉnh trước đó trên đường đi ngắn nhất
+
+// Hàm Dijkstra
+void dijkstra(int n, int s) {
+    bool visited[MAX_N] = {false};
+    for (int i = 0; i < n; i++) {
+        dist[i] = INF;  // Gán tất cả các khoảng cách ban đầu là vô cùng lớn
+        p[i] = -1;      // Gán đỉnh trước đó là không có
+    }
+    dist[s] = 0;  // Đặt khoảng cách từ s đến chính nó là 0
+
+    for (int i = 0; i < n; i++) {
+        int u = -1;
+        for (int j = 0; j < n; j++) {
+            if (!visited[j] && (u == -1 || dist[j] < dist[u])) {
+                u = j;
+            }
+        }
+        if (dist[u] == INF) break;
+        visited[u] = true;
+
+        for (int v = 0; v < n; v++) {
+            if (adj[u][v].w != 0 && dist[u] + adj[u][v].w < dist[v]) {
+                dist[v] = dist[u] + adj[u][v].w;
+                p[v] = u;
+            }
+        }
+    }
+}
+
+// Hàm in đường đi
+void print_path(int s, int t) {
+    if (t == s) {
+        printf("%d", s + 1);  // In ra đỉnh bắt đầu (s)
+        return;
+    }
+    print_path(s, p[t]);
+    printf(" -> %d", t + 1);  // In ra đỉnh hiện tại (t)
+}
+
+int main() {
+    int n, m, s, t;
+    scanf("%d %d", &n, &m);  // Đọc số đỉnh n và số cung m
+
+    // Khởi tạo đồ thị
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            adj[i][j].w = 0;  // Gán trọng số ban đầu là 0 (không có cung)
+        }
+    }
+
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        scanf("%d %d %d", &u, &v, &w);  // Đọc cung u, v và trọng số w
+        u--; v--;  // Chuyển sang chỉ số mảng (0-based)
+        adj[u][v].w = w;  // Gán trọng số của cung u -> v
+    }
+
+    scanf("%d %d", &s, &t);  // Đọc đỉnh bắt đầu s và đỉnh đích t
+    s--; t--;  // Chuyển sang chỉ số mảng (0-based)
+
+    dijkstra(n, s);  // Tìm đường đi ngắn nhất từ s
+
+    // In kết quả
+    if (dist[t] == INF) {
+        printf("No path from %d to %d\n", s + 1, t + 1);  // Nếu không có đường đi
+    } else {
+        print_path(s, t);  // In ra đường đi ngắn nhất từ s đến t
+        printf("\n");
+    }
+
+    return 0;
+}

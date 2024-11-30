@@ -1,0 +1,90 @@
+Viết chương trình đọc vào một đồ thị có hướng và kiểm tra xem nó có liên thông mạnh không.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra màn hình STRONG CONNECTED nếu đồ thị liên thông mạnh, ngược lại in ra DISCONNECTED.
+Xem thêm ví dụ bên dưới.
+For example:
+
+Input	Result
+5 7	STRONG CONNECTED
+1 2
+2 3
+3 1
+2 4
+3 4
+4 5
+5 3
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+
+int n, m;  // Số đỉnh và số cung
+int adj[MAX_N][MAX_N];  // Ma trận kề của đồ thị
+int adj_rev[MAX_N][MAX_N];  // Ma trận kề của đồ thị đảo ngược
+int visited[MAX_N];
+
+void dfs(int u, int adj[MAX_N][MAX_N]) {
+    visited[u] = 1;
+    for (int v = 1; v <= n; ++v) {
+        if (adj[u][v] && !visited[v]) {
+            dfs(v, adj);
+        }
+    }
+}
+
+int main() {
+    // Đọc dữ liệu đầu vào
+    scanf("%d %d", &n, &m);
+    
+    // Khởi tạo ma trận kề
+    for (int i = 0; i < m; ++i) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;
+        adj_rev[v][u] = 1;  // Đồ thị đảo ngược
+    }
+
+    // Kiểm tra liên thông mạnh bằng DFS
+    // Bắt đầu từ đỉnh 1
+    for (int i = 1; i <= n; ++i) visited[i] = 0;
+    dfs(1, adj);  // DFS trên đồ thị ban đầu
+
+    // Nếu không thể tới tất cả các đỉnh, đồ thị không liên thông mạnh
+    for (int i = 1; i <= n; ++i) {
+        if (!visited[i]) {
+            printf("DISCONNECTED\n");
+            return 0;
+        }
+    }
+
+    // Kiểm tra trên đồ thị đảo ngược
+    for (int i = 1; i <= n; ++i) visited[i] = 0;
+    dfs(1, adj_rev);  // DFS trên đồ thị đảo ngược
+
+    // Nếu không thể tới tất cả các đỉnh trong đồ thị đảo ngược, đồ thị không liên thông mạnh
+    for (int i = 1; i <= n; ++i) {
+        if (!visited[i]) {
+            printf("DISCONNECTED\n");
+            return 0;
+        }
+    }
+
+    // Nếu tất cả đều có thể tới nhau từ mọi đỉnh, thì đồ thị liên thông mạnh
+    printf("STRONG CONNECTED\n");
+
+    return 0;
+}
+
+
+

@@ -1,0 +1,123 @@
+Trong một khu rừng nọ, có một bầy nai và n bãi cỏ. Để đi từ bãi cỏ này sang bãi cỏ kia, bầy nai sẽ đi theo những con đường mòn được tạo ra từ trước. Sau một thời gian, bầy nai nhận ra rằng chúng chỉ cần một số đường mòn là có thể đi từ một bãi cõ bất kỳ đến một bãi cỏ khác. Trên mỗi con đường mòn có một số nguy rình rập bầy nai (ví dụ có hổ, sói, ...). Để đơn giản ta có thể giả sử độ nguy hiểm của mỗi con đường là 1 số nguyên từ 1 (ít nguy hiểm nhất) đến 100 (nhiều nguy hiểm nhất).
+
+Hãy viết chương trình giúp bầy nai tìm các con đường mòn cần thiết sao cho tổng độ nguy hiểm thấp nhất.
+
+Đầu vào
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số bãi cỏ và số con đường mòn.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả con đường mòn (u, v) với độ nguy hiểm w.
+Đầu ra
+
+In ra màn hình tổng độ nguy hiểm thấp nhất.
+For example:
+
+Input	Result
+4 4	11
+1 2 3
+2 3 6
+3 4 2
+1 4 8
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+#define MAX_M 10000
+
+// Cấu trúc để lưu thông tin các cạnh
+typedef struct {
+    int u, v, w;  // u, v là hai bãi cỏ, w là độ nguy hiểm
+} Edge;
+
+// Cấu trúc DSU (Disjoint Set Union)
+int parent[MAX_N], rank[MAX_N];
+
+// Hàm khởi tạo DSU
+void initDSU(int n) {
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+}
+
+// Hàm tìm cha của một đỉnh, với tối ưu hóa path compression
+int find(int x) {
+    if (parent[x] != x) {
+        parent[x] = find(parent[x]);
+    }
+    return parent[x];
+}
+
+// Hàm hợp nhất hai tập hợp (union by rank)
+void unionSets(int x, int y) {
+    int rootX = find(x);
+    int rootY = find(y);
+    
+    if (rootX != rootY) {
+        if (rank[rootX] > rank[rootY]) {
+            parent[rootY] = rootX;
+        } else if (rank[rootX] < rank[rootY]) {
+            parent[rootX] = rootY;
+        } else {
+            parent[rootY] = rootX;
+            rank[rootX]++;
+        }
+    }
+}
+
+// Hàm so sánh các cạnh để sắp xếp theo độ nguy hiểm
+int compareEdges(const void *a, const void *b) {
+    return ((Edge *)a)->w - ((Edge *)b)->w;
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    Edge edges[MAX_M];
+    
+    // Đọc thông tin các cạnh
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        scanf("%d %d %d", &u, &v, &w);
+        edges[i].u = u;
+        edges[i].v = v;
+        edges[i].w = w;
+    }
+    
+    // Sắp xếp các cạnh theo độ nguy hiểm
+    qsort(edges, m, sizeof(Edge), compareEdges);
+
+    // Khởi tạo DSU
+    initDSU(n);
+
+    int totalDanger = 0;  // Tổng độ nguy hiểm của MST
+    int edgeCount = 0;    // Số cạnh đã thêm vào MST
+
+    // Áp dụng thuật toán Kruskal để xây dựng cây khung
+    for (int i = 0; i < m; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int w = edges[i].w;
+        
+        // Nếu u và v chưa được nối (không tạo chu trình)
+        if (find(u) != find(v)) {
+            totalDanger += w;  // Thêm độ nguy hiểm của cạnh vào tổng
+            unionSets(u, v);   // Nối u và v
+            edgeCount++;
+        }
+        
+        // Nếu đã đủ n-1 cạnh, dừng lại
+        if (edgeCount == n - 1) {
+            break;
+        }
+    }
+
+    // In ra tổng độ nguy hiểm của MST
+    printf("%d\n", totalDanger);
+
+    return 0;
+}

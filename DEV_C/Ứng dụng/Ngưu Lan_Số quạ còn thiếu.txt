@@ -1,0 +1,130 @@
+"Ngưu Lang là vị thần chăn trâu của Ngọc Hoàng Thượng đế, vì say mê một tiên nữ phụ trách việc dệt vải tên là Chức Nữ nên bỏ bễ việc chăn trâu, để trâu đi nghênh ngang vào điện Ngọc Hư. Chức Nữ cũng vì mê tiếng tiêu của Ngưu Lang nên trễ nải việc dệt vải. Ngọc Hoàng giận dữ, bắt cả hai phải ở cách xa nhau, người đầu sông Ngân, kẻ cuối sông.
+
+Mỗi năm một lần, Sau đó, Ngọc Hoàng thương tình nên ra ơn cho hai người mỗi năm được gặp nhau vào ngày 7 tháng Bảy âm lịch. Khi tiễn biệt nhau, Ngưu Lang và Chức Nữ khóc sướt mướt. Nước mắt của họ rơi xuống trần hóa thành cơn mưa và được người dưới trần gian đặt tên là mưa ngâu." (Theo wikipedia.com)
+
+Để gặp được nhau vào ngày 7/7, Ngưu Lang và Chức Nữ phải nhờ đến bầy quạ đen bắt cầu (gọi là Ô kiều) cho mình đi qua để gặp nhau.
+
+Sông Ngân Hà có n ngôi sao, giả sử được đánh số từ 1 đến n. Ngưu Lang ở tại ngôi sao Ngưu (Altair), được đánh số 1, còn Chức Nữ thì mỗi năm lại ở tại một ngôi sao khác nhau trong các ngôi sao từ 2 đến n. Để bắt được một cây cầu từ ngôi sao này sang ngôi sao kia cần một số lượng quạ nào đó. Một khi con quạ ở cây cầu nào thì phải ở đó cho đến khi Ngưu Lang và Chức Nữ gặp được nhau.
+
+Vì không biết Chức Nữ đang ở ngôi sao nào nên Ngưu Lang cần bắt cầu sao cho từ ngôi sao số 1, anh ta có thể đi đến được tất cả các ngôi sao khác (dĩ nhiên là để tìm Chức Nữ).
+
+Quạ thì càng ngày càng hiếm, mà Ngưu Lang chỉ có đủ tiền để thuê được tối đa k con quạ thôi nên Ngưu Lang phải tính toán sao cho số lượng quạ dùng để bắt cầu ít nhất có thể.
+
+Hãy giúp Ngưu Lang viết chương trình tính xem Ngưu Lang có thể gặp được Chức Nữ không. Nếu thiếu thì thiếu bao nhiêu con quạ.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 3 số nguyên n, m và k, tương ứng là số ngôi sao, số cặp sao có thể bắt cầu và số quạ mà Ngưu Lang có thể thuê.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u v q nói rằng để bắt 1 cây cầu bắt qua hai ngôi sao u và v cần phải tốn q con quạ.
+Đầu ra (Output)
+
+Nếu số quạ cần thiết <= k thì in ra màn hình OK, ngược lại in ra số quạ còn thiếu.
+Xem thêm ví dụ trong phần For example. Trong ví dụ đầu tiên Ngưu Lang có thể thuê được tối đa 7 con quạ. Số quạ cần thiết để bắt cầu là 8. Vì thế Ngưu Lang thiếu 1 con.
+
+For example:
+
+Input	Result
+4 3 7	1
+1 2 5
+2 3 2
+3 4 1
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+#define MAX_M 10000
+
+// Cấu trúc để lưu các cạnh
+typedef struct {
+    int u, v, q;  // u, v là các đỉnh, q là số quạ cần
+} Edge;
+
+// Cấu trúc DSU (Disjoint Set Union) cho thuật toán Kruskal
+int parent[MAX_N], rank[MAX_N];
+
+void initDSU(int n) {
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+}
+
+int find(int x) {
+    if (parent[x] != x) {
+        parent[x] = find(parent[x]);  // Path compression
+    }
+    return parent[x];
+}
+
+void unionSets(int x, int y) {
+    int rootX = find(x);
+    int rootY = find(y);
+    
+    if (rootX != rootY) {
+        if (rank[rootX] > rank[rootY]) {
+            parent[rootY] = rootX;
+        } else if (rank[rootX] < rank[rootY]) {
+            parent[rootX] = rootY;
+        } else {
+            parent[rootY] = rootX;
+            rank[rootX]++;
+        }
+    }
+}
+
+int compareEdges(const void *a, const void *b) {
+    return ((Edge *)a)->q - ((Edge *)b)->q;
+}
+
+int main() {
+    int n, m, k;
+    scanf("%d %d %d", &n, &m, &k);
+
+    Edge edges[MAX_M];
+    
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].q);
+    }
+    
+    // Sắp xếp các cạnh theo trọng số (số quạ cần ít nhất)
+    qsort(edges, m, sizeof(Edge), compareEdges);
+
+    initDSU(n);
+
+    int totalCrows = 0;  // Tổng số quạ cần thiết
+    int edgeCount = 0;   // Số cạnh đã chọn vào cây khung
+
+    // Áp dụng thuật toán Kruskal để tìm MST
+    for (int i = 0; i < m; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int q = edges[i].q;
+        
+        // Nếu u và v chưa được nối trong cùng một tập hợp (không tạo chu trình)
+        if (find(u) != find(v)) {
+            totalCrows += q;  // Thêm số quạ cần vào tổng
+            unionSets(u, v);   // Nối u và v vào MST
+            edgeCount++;
+        }
+        
+        // Nếu MST đã đủ n-1 cạnh, dừng
+        if (edgeCount == n - 1) {
+            break;
+        }
+    }
+
+    // Kiểm tra xem Ngưu Lang có đủ quạ không
+    if (totalCrows <= k) {
+        printf("OK\n");
+    } else {
+        printf("%d\n", totalCrows - k);  // Số quạ còn thiếu
+    }
+
+    return 0;
+}
+

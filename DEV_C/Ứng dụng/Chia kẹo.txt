@@ -1,0 +1,102 @@
+Cô giáo Trang chuẩn bị kẹo để phát cho các bé mà cô đang giữ. Dĩ nhiên môi bé đều có một tên gọi rất dễ thương ví dụ: Mạnh Phát, Diễm Quỳnh, Đăng Khoa, ... Tuy nhiên, để đơn giản vấn đề ta có thể giả sử các em được đánh số từ 1 đến n.
+
+Cô giáo muốn rằng tất cả các em đều phải có kẹo. Cô lại biết thêm rằng có một số bé có ý muốn hơn bạn mình một chút vì thế các em ấy muốn kẹo của mình nhiều hơn của bạn.
+
+Hãy viết chương trình giúp cô tính xem mỗi em cần được chia ít nhất bao nhiêu kẹo và tổng số kẹo ít nhất mà cô phải chuẩn bị là bao nhiêu.
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số bé và số cặp bé mà trong đó có 1 bé muốn có kẹo hơn bạn mình.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên a, b nói rằng bé a muốn có kẹo nhiều hơn bé b.
+Đầu ra (Output)
+
+In ra màn hình số kẹo ít nhất của từng em, mỗi em trên một dòng.
+Dòng cuối cùng in tổng số kẹo ít nhất mà cô giáo Trang cần phải chuẩn bị.
+Xem thêm các ví dụ để hiểu thêm về đầu vào và đầu ra.
+
+For example:
+
+Input	Result
+3 2	3  
+1 3	1
+3 2	2
+	6
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+
+int adj[MAX_N][MAX_N];  // Ma trận kề để lưu đồ thị
+int inDegree[MAX_N];    // Mảng lưu bậc vào của mỗi đỉnh
+int candy[MAX_N];       // Mảng lưu số kẹo của mỗi bé
+int n, m;
+
+// Hàm thực hiện sắp xếp topo để tìm thứ tự phân phát kẹo
+void topologicalSort() {
+    int queue[MAX_N], front = 0, rear = 0;
+
+    // Thêm các đỉnh có bậc vào là 0 vào hàng đợi
+    for (int i = 1; i <= n; i++) {
+        if (inDegree[i] == 0) {
+            queue[rear++] = i;
+            candy[i] = 1;  // Bé có bậc vào 0 nhận ít nhất 1 kẹo
+        }
+    }
+
+    while (front < rear) {
+        int u = queue[front++];  // Lấy bé từ hàng đợi
+
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v]) {  // Nếu có cạnh từ u đến v
+                inDegree[v]--;
+                if (inDegree[v] == 0) {
+                    queue[rear++] = v;
+                }
+                // Đảm bảo rằng bé v nhận được nhiều kẹo hơn bé u
+                if (candy[v] <= candy[u]) {
+                    candy[v] = candy[u] + 1;
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    // Đọc số bé và số cặp ràng buộc
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo ma trận kề và bậc vào
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            adj[i][j] = 0;
+        }
+        inDegree[i] = 0;
+        candy[i] = 0;
+    }
+
+    // Đọc các cặp ràng buộc
+    for (int i = 0; i < m; i++) {
+        int a, b;
+        scanf("%d %d", &a, &b);
+        adj[b][a] = 1;  // Bé a muốn nhiều kẹo hơn bé b
+        inDegree[a]++;
+    }
+
+    // Gọi hàm sắp xếp topo và tính số kẹo
+    topologicalSort();
+
+    // Tính tổng số kẹo tối thiểu cần chuẩn bị và in kết quả
+    int totalCandy = 0;
+    for (int i = 1; i <= n; i++) {
+        printf("%d\n", candy[i]);
+        totalCandy += candy[i];
+    }
+    printf("%d\n", totalCandy); //in ra tổng số kẹo
+
+    return 0;
+}
+

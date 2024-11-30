@@ -1,0 +1,112 @@
+Viết chương trình đọc một đơn đồ thị vô hướng, có trọng số không âm từ bàn phím và in ra chiều dài đường đi ngắn nhất từ đỉnh 1 đến đỉnh n.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m (1≤n<100;0≤m<500)
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w (0≤w≤100)
+.
+Đầu ra (Output)
+
+In ra màn hình chiều dài của đường đi ngắn nhất từ 1 đến n. Nếu không có đường đi từ 1 đến n, in ra -1.
+Xem thêm ví dụ bên dưới.
+Gợi ý
+
+Sau khi kết thúc thuật toán nếu pi[u] = oo thì có nghĩa là không có đường đi từ s đến n.
+
+
+For example:
+
+Input	Result
+3 3	7  
+2 1 3
+3 2 4
+1 3 10
+
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define MAX_N 100
+#define MAX_M 500
+
+typedef struct {
+    int u, v, w;
+} Edge;
+
+int dist[MAX_N + 1];  // Độ dài đường đi ngắn nhất từ đỉnh 1 đến đỉnh i
+int visited[MAX_N + 1]; // Mảng kiểm tra đỉnh đã thăm
+Edge edges[MAX_M]; // Mảng chứa các cạnh
+
+void dijkstra(int n, int m) {
+    // Khởi tạo các mảng
+    for (int i = 1; i <= n; i++) {
+        dist[i] = INT_MAX; // Mặc định là vô cùng
+        visited[i] = 0; // Chưa thăm
+    }
+
+    dist[1] = 0; // Độ dài đường đi từ đỉnh 1 đến chính nó là 0
+    
+    // Thuật toán Dijkstra
+    for (int i = 1; i <= n - 1; i++) {
+        int min_dist = INT_MAX;
+        int u = -1;
+
+        // Tìm đỉnh u chưa thăm và có độ dài đường đi ngắn nhất
+        for (int j = 1; j <= n; j++) {
+            if (!visited[j] && dist[j] < min_dist) {
+                min_dist = dist[j];
+                u = j;
+            }
+        }
+
+        visited[u] = 1; // Đánh dấu đỉnh u đã thăm
+
+        // Cập nhật độ dài đường đi của các đỉnh kề với u
+        for (int j = 0; j < m; j++) {
+            if (edges[j].u == u) {
+                int v = edges[j].v;
+                int weight = edges[j].w;
+                if (dist[v] > dist[u] + weight) {
+                    dist[v] = dist[u] + weight;
+                }
+            }
+            // Vì đồ thị vô hướng nên cũng cần xét cung (v, u)
+            if (edges[j].v == u) {
+                int v = edges[j].u;
+                int weight = edges[j].w;
+                if (dist[v] > dist[u] + weight) {
+                    dist[v] = dist[u] + weight;
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+    
+    // Đọc các cạnh của đồ thị
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        scanf("%d %d %d", &u, &v, &w);
+        edges[i].u = u;
+        edges[i].v = v;
+        edges[i].w = w;
+    }
+    
+    // Tính toán đường đi ngắn nhất từ đỉnh 1 đến đỉnh n
+    dijkstra(n, m);
+    
+    // In kết quả
+    if (dist[n] == INT_MAX) {
+        printf("-1\n"); // Nếu không có đường đi từ 1 đến n
+    } else {
+        printf("%d\n", dist[n]); // In chiều dài đường đi ngắn nhất từ 1 đến n
+    }
+
+    return 0;
+}

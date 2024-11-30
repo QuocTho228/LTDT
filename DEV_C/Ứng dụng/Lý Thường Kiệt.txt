@@ -1,0 +1,125 @@
+Lý Thường Kiệt (sinh năm 1019, mất 1105) là một danh tướng đời nhà Lý có công lớn trong việc đánh bại quân nhà Tống vào năm 1075-1077. Ông được cho là đã viết ra bản tuyên ngôn độc lập đầu tiên của dân tộc ("Nam Quốc Sơn Hà").
+
+"Tháng 3 năm 1076, nhà Tống sai tuyên phủ sứ Quảng Nam là Quách Quỳ làm chiêu thảo sứ, Triệu Tiết làm phó, đem quân 9 tướng, hẹn với Chiêm Thành và Chân Lạp sang xâm lấn Đại Việt, ... Quân Tống tràn xuống, theo đường tắt qua dãy núi Đâu Đỉnh, tới phía tây bờ sông Phú Lương; trong khi đó, một cánh quân tách ra, vòng sang phía đông đánh bọc hậu quân Nam ở Giáp Khẩu (Chi Lăng) và thẳng tới sông Cầu.
+
+Để đối phó với quân Tống trong tình hình này Lý Thường Kiệt lập chiến luỹ sông Như Nguyệt để chống Tống."
+
+Chiến luỹ sông Như Nguyệt có n điểm trọng yếu cần phải bảo vệ, giả sử được đánh số từ 1 đến n. Lý Thường Kiệt cần phải bố trí các con đường an toàn để điều động quân lính từ một điểm trọng yếu này đến một điểm trọng yếu khác. Để xây dựng một con đường an toàn từ một điểm trọng yếu u này đến một điểm trọng yếu v cần một lượng đất đá là w(u, v) sọt.
+
+Hãy giúp Lý Thường Kiệt tìm cách xây dựng các con đường an toàn sao cho từ bất kỳ một điểm trọng yếu nào cũng đều có thể đi đến một điểm trọng yếu khác bằng cách sử dụng các con đường an toàn và tổng số đất đá được sử dụng là ít nhất.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n, m tương ứng là số điểm trọng yếu, số con đường an toàn có thể xây dựng.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u v w nói rằng để xây dựng 1 con đường an toàn nối 2 điểm trọng yếu u và v cần phải tốn w sọt đất đá.
+Đầu ra (Output)
+
+In ra tổng số sọt đất đá được sử dụng.
+Xem thêm ví dụ trong phần For example. Trong ví dụ đầu tiên Lý Thường Kiệt cần phải xây 3 con đường (1, 2) tốn 5 sọt, (2, 3) tốn 2 sọt và (3,4) tốn 1 sọt. Tổng cộng là 8.
+
+Chú thích:
+
+Sọt: dụng cụ dùng để chứa (nông sản, đất, đá, ...)
+
+For example:
+
+Input	Result
+4 4	8
+1 2 5
+2 3 2
+3 4 1
+1 4 6
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+#define MAX_M 10000
+
+// Cấu trúc để lưu các cạnh
+typedef struct {
+    int u, v, w;  // u, v là các đỉnh, w là trọng số (số sọt đất đá)
+} Edge;
+
+// Cấu trúc DSU (Disjoint Set Union) cho thuật toán Kruskal
+int parent[MAX_N], rank[MAX_N];
+
+void initDSU(int n) {
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+}
+
+int find(int x) {
+    if (parent[x] != x) {
+        parent[x] = find(parent[x]);  // Path compression
+    }
+    return parent[x];
+}
+
+void unionSets(int x, int y) {
+    int rootX = find(x);
+    int rootY = find(y);
+    
+    if (rootX != rootY) {
+        if (rank[rootX] > rank[rootY]) {
+            parent[rootY] = rootX;
+        } else if (rank[rootX] < rank[rootY]) {
+            parent[rootX] = rootY;
+        } else {
+            parent[rootY] = rootX;
+            rank[rootX]++;
+        }
+    }
+}
+
+int compareEdges(const void *a, const void *b) {
+    return ((Edge *)a)->w - ((Edge *)b)->w;
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    Edge edges[MAX_M];
+    
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+    }
+    
+    // Sắp xếp các cạnh theo trọng số (số sọt đất đá cần ít nhất)
+    qsort(edges, m, sizeof(Edge), compareEdges);
+
+    initDSU(n);
+
+    int totalWeight = 0;  // Tổng số sọt đất đá cần thiết
+    int edgeCount = 0;    // Số cạnh đã chọn vào cây khung
+
+    // Áp dụng thuật toán Kruskal để tìm MST
+    for (int i = 0; i < m; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int w = edges[i].w;
+        
+        // Nếu u và v chưa được nối trong cùng một tập hợp (không tạo chu trình)
+        if (find(u) != find(v)) {
+            totalWeight += w;  // Thêm số sọt đất đá cần vào tổng
+            unionSets(u, v);   // Nối u và v vào MST
+            edgeCount++;
+        }
+        
+        // Nếu MST đã đủ n-1 cạnh, dừng
+        if (edgeCount == n - 1) {
+            break;
+        }
+    }
+
+    // In ra tổng trọng số của cây khung nhỏ nhất
+    printf("%d\n", totalWeight);
+
+    return 0;
+}

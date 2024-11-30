@@ -1,0 +1,93 @@
+Viết chương trình đọc vào một đơn đồ thị có hướng, có trọng số. Áp dụng thuật toán Floyd - Warshall để tìm đường đi ngắn nhất giữa các cặp đỉnh.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m (0 < n < 100; 0 < m < 500).
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w (-100 < w < 100).
+Dữ liệu được đảm bảo không tồn tại chu trình âm.
+
+Đầu ra (Output)
+
+In ra màn hình chiều dài đường đi ngắn nhất giữa các cặp đỉnh theo mẫu bên dưới. Nếu không có đường đi in ra NO PATH.
+```u -> v: chiều dài```
+Liệt kê các cặp theo thứ tự tăng dần của u và v
+Xem thêm ví dụ bên dưới.
+For example:
+
+Input	
+3 3  
+1 2 9
+2 3 4
+1 3 4
+
+Result
+1 -> 1: 0
+1 -> 2: 9
+1 -> 3: 4
+2 -> 1: NO PATH
+2 -> 2: 0
+2 -> 3: 4
+3 -> 1: NO PATH
+3 -> 2: NO PATH
+3 -> 3: 0
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define MAX_N 100
+#define INF INT_MAX
+
+int dist[MAX_N][MAX_N]; // Ma trận lưu trữ độ dài đường đi ngắn nhất giữa các cặp đỉnh
+
+void floydWarshall(int n) {
+    // Áp dụng thuật toán Floyd-Warshall
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dist[i][k] != INF && dist[k][j] != INF && dist[i][k] + dist[k][j] < dist[i][j]) {
+                    dist[i][j] = dist[i][k] + dist[k][j];
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo ma trận độ dài đường đi, tất cả đều là INF trừ đường đi từ đỉnh đến chính nó
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) dist[i][j] = 0;
+            else dist[i][j] = INF;
+        }
+    }
+
+    // Nhập các cung và trọng số
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        scanf("%d %d %d", &u, &v, &w);
+        u--; v--; // Chuyển chỉ số từ 1-based sang 0-based
+        dist[u][v] = w;
+    }
+
+    // Áp dụng thuật toán Floyd-Warshall
+    floydWarshall(n);
+
+    // In kết quả
+    for (int u = 0; u < n; u++) {
+        for (int v = 0; v < n; v++) {
+            if (dist[u][v] == INF) {
+                printf("%d -> %d: NO PATH\n", u + 1, v + 1);
+            } else {
+                printf("%d -> %d: %d\n", u + 1, v + 1, dist[u][v]);
+            }
+        }
+    }
+
+    return 0;
+}

@@ -1,0 +1,128 @@
+Viết chương trình đọc một đơn đồ thị có hướng, có trọng số không âm từ bàn phím. Cài đặt thuật toán Moore – Dijkstra để tìm (các) đường đi ngắn nhất từ đỉnh 1 đến các đỉnh còn lại. In các thông tin pi[u] và p[u] của các đỉnh ra màn hình.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m (1≤n<100;0≤m<500)
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w (0≤w≤100)
+.
+Đầu ra (Output)
+
+In ra màn hình pi[u] và p[u] của các đỉnh theo mẫu:
+```lang:cpp;;
+pi[1] = 0, pi[1] = -1
+pi[2] = 3, pi[2] = 1
+...```
+Xem thêm ví dụ bên dưới.
+
+Chú ý
+
+Để chạy thử chương trình, bạn nên tạo một tập tin dt.txt chứa đồ thị cần kiểm tra.
+Thêm dòng freopen("dt.txt", "r", stdin); vào ngay sau hàm main(). Khi nộp bài, nhớ gỡ bỏ dòng này ra.
+Có thể sử dụng đoạn chương trình đọc dữ liệu mẫu sau đây:
+```lang:cpp;;
+    freopen("dt.txt", "r", stdin); //Khi nộp bài nhớ bỏ dòng này.
+    Graph G;
+    int n, m, u, v, w, e;
+    scanf("%d%d", &n, &m);
+    init_graph(&G, n);
+    
+    for (e = 0; e < m; e++) {
+        scanf("%d%d%d", &u, &v, &w);
+        add_edge(&G, u, v, w);
+    }
+```
+For example:
+
+Input	
+3 4  
+1 2 9
+2 3 5
+1 3 4
+3 2 0
+
+Result
+pi[1] = 0, p[1] = -1
+pi[2] = 4, p[2] = 3
+pi[3] = 4, p[3] = 1
+
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define MAX_N 100
+#define MAX_M 500
+
+typedef struct {
+    int u, v, w;
+} Edge;
+
+int pi[MAX_N + 1]; // Độ dài đường đi ngắn nhất từ đỉnh 1 đến đỉnh i
+int p[MAX_N + 1];  // Đỉnh trước của đỉnh i trong đường đi ngắn nhất
+int dist[MAX_N + 1]; // Mảng lưu trữ độ dài tạm thời
+int visited[MAX_N + 1]; // Mảng kiểm tra đã thăm đỉnh hay chưa
+
+void dijkstra(int n, int m, Edge edges[]) {
+    // Khởi tạo các mảng
+    for (int i = 1; i <= n; i++) {
+        dist[i] = INT_MAX; // Mặc định là vô cùng
+        visited[i] = 0; // Chưa thăm
+        p[i] = -1; // Chưa có đỉnh trước
+    }
+    
+    dist[1] = 0; // Độ dài đường đi từ đỉnh 1 đến chính nó là 0
+    pi[1] = 0; // Độ dài đường đi ngắn nhất từ đỉnh 1 đến đỉnh 1 là 0
+    p[1] = -1; // Đỉnh trước của đỉnh 1 là -1 (không có)
+    
+    for (int i = 1; i <= n - 1; i++) {
+        int min_dist = INT_MAX;
+        int u = -1;
+        
+        // Tìm đỉnh u chưa thăm và có độ dài đường đi ngắn nhất
+        for (int j = 1; j <= n; j++) {
+            if (!visited[j] && dist[j] < min_dist) {
+                min_dist = dist[j];
+                u = j;
+            }
+        }
+        
+        visited[u] = 1; // Đánh dấu đỉnh u đã thăm
+        
+        // Cập nhật độ dài đường đi của các đỉnh kề với u
+        for (int j = 0; j < m; j++) {
+            if (edges[j].u == u) {
+                int v = edges[j].v;
+                int weight = edges[j].w;
+                if (dist[v] > dist[u] + weight) {
+                    dist[v] = dist[u] + weight;
+                    p[v] = u;
+                    pi[v] = dist[v];
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+    
+    Edge edges[MAX_M];
+    
+    // Đọc các cạnh của đồ thị
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+    }
+    
+    dijkstra(n, m, edges);
+    
+    // In kết quả
+    for (int i = 1; i <= n; i++) {
+        printf("pi[%d] = %d, p[%d] = %d\n", i, pi[i], i, p[i]);
+    }
+
+    return 0;
+}
+

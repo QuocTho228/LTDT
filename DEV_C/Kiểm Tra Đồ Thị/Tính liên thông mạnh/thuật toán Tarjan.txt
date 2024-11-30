@@ -1,0 +1,94 @@
+Viết chương trình đọc vào một đồ thị có hướng và áp dụng thuật toán Tarjan lên nó.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra màn hình n dòng. Ở dòng thứ u, in ra 2 số nguyên num[u] và min_num[u] cách nhau 1 khoảng trắng.
+Xem thêm ví dụ bên dưới.
+For example:
+
+Input	Result
+5 7	1 1
+1 2	2 1
+2 3	3 1
+3 1	4 3
+2 4	5 3
+3 4
+4 5
+5 3
+1 1
+2 1
+3 1
+4 3
+5 3
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+
+int n, m;  // Số đỉnh và số cung
+int adj[MAX_N][MAX_N];  // Ma trận kề
+int num[MAX_N], min_num[MAX_N], visited[MAX_N], on_stack[MAX_N], stack[MAX_N];
+int idx = 0, stack_top = -1;
+
+void tarjan(int u) {
+    num[u] = min_num[u] = ++idx;
+    stack[++stack_top] = u;
+    on_stack[u] = 1;
+
+    // Duyệt các cung của đỉnh u
+    for (int v = 1; v <= n; ++v) {
+        if (adj[u][v]) {  // Nếu có cung u -> v
+            if (num[v] == 0) {  // Nếu v chưa được khám phá
+                tarjan(v);
+                min_num[u] = (min_num[u] < min_num[v]) ? min_num[u] : min_num[v];
+            } else if (on_stack[v]) {  // Nếu v đã trong ngăn xếp
+                min_num[u] = (min_num[u] < num[v]) ? min_num[u] : num[v];
+            }
+        }
+    }
+
+    // Không cần kiểm tra SCC ở đây vì bài toán yêu cầu chỉ in num và min_num
+}
+
+int main() {
+    // Đọc dữ liệu đầu vào
+    scanf("%d %d", &n, &m);
+    for (int i = 0; i < m; ++i) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;
+    }
+
+    // Khởi tạo mảng
+    for (int i = 1; i <= n; ++i) {
+        num[i] = 0;
+        min_num[i] = 0;
+        visited[i] = 0;
+        on_stack[i] = 0;
+    }
+
+    // Áp dụng thuật toán Tarjan
+    for (int i = 1; i <= n; ++i) {
+        if (num[i] == 0) {
+            tarjan(i);
+        }
+    }
+
+    // In ra num và min_num của từng đỉnh
+    for (int i = 1; i <= n; ++i) {
+        printf("%d %d\n", num[i], min_num[i]);
+    }
+
+    return 0;
+}
+
+

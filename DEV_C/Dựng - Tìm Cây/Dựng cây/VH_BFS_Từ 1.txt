@@ -1,0 +1,160 @@
+Cho một đồ thị vô hướng đơn. Hãy dựng (các) cây DUYỆT ĐỒ THỊ khi duyệt đồ thị theo chiều rộng bắt đầu từ đỉnh 1.
+
+Nếu vẫn còn đỉnh chưa duyệt sau khi duyệt xong lần 1, tìm đỉnh có chỉ số nhỏ nhất chưa duyệt mà duyệt nó, và cứ tiếp tục như thế cho đến khi tất cả các đỉnh đều được duyệt.
+
+Quy ước:
+
+Các đỉnh kề của 1 đỉnh được liệt kê theo thứ tự tăng dần
+Đầu vào (Input)
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra cây duyệt đồ thị theo định dạng:
+```lang:cpp;;
+1 <đỉnh cha của 1>
+2 <đỉnh cha của 2>
+....
+i <đỉnh cha của i>
+...
+n <đỉnh cha của n>```
+Nếu 1 đỉnh không có đỉnh cha (nó là đỉnh gốc của cây) thì đỉnh cha của nó là -1.
+Xem thêm các ví dụ bên dưới.
+Gợi ý
+
+Sử dụng mảng parent[u] để lưu đỉnh cha của đỉnh u.
+Trong quá trình duyệt, thay vì in các đỉnh ra màn hình, ghi nhận lại đỉnh cha của các đỉnh.
+Khi duyệt xong lần lượt in ra u và parent[u] (u chạy từ 1 đến n).
+Hướng dẫn đọc dữ liệu và chạy thử chương trình
+
+Để chạy thử chương trình, bạn nên tạo một tập tin dt.txt chứa đồ thị cần kiểm tra.
+Thêm dòng freopen("dt.txt", "r", stdin); vào ngay sau hàm main(). Khi nộp bài, nhớ gỡ bỏ dòng này ra.
+Có thể sử dụng đoạn chương trình đọc dữ liệu mẫu sau đây:
+```lang:cpp;;
+freopen("dt.txt", "r", stdin); //Khi nộp bài nhớ bỏ dòng này.
+Graph G;
+int n, m, u, v, w, e;
+scanf("%d%d", &n, &m);
+init_graph(&G, n);
+
+for (e = 0; e < m; e++) {
+    scanf("%d%d", &u, &v);
+    add_edge(&G, u, v);
+}
+```
+For example:
+
+Input	
+4 3
+2 1
+1 4
+2 4
+
+Result
+1 -1
+2 1
+3 -1
+4 1
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_NODES 100
+
+// Ma trận kề
+int adj[MAX_NODES][MAX_NODES];
+// Mảng đánh dấu và mảng lưu đỉnh cha
+int visited[MAX_NODES];
+int parent[MAX_NODES];
+// Hàng đợi
+int queue[MAX_NODES], front = -1, rear = -1;
+
+// Khởi tạo đồ thị
+void init_graph(int n) {
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            adj[i][j] = 0;
+        }
+    }
+}
+
+// Thêm cạnh vào đồ thị
+void add_edge(int u, int v) {
+    adj[u][v] = 1;
+    adj[v][u] = 1; // Đồ thị vô hướng
+}
+
+// Đưa phần tử vào hàng đợi
+void enqueue(int x) {
+    queue[++rear] = x;
+    if (front == -1) front = 0;
+}
+
+// Lấy phần tử ra khỏi hàng đợi
+int dequeue() {
+    return queue[front++];
+}
+
+// Kiểm tra hàng đợi rỗng
+int is_empty() {
+    return front > rear;
+}
+
+// Duyệt BFS từ một đỉnh
+void bfs(int start, int n) {
+    enqueue(start);
+    visited[start] = 1;
+    parent[start] = -1; // Đỉnh gốc không có cha
+
+    while (!is_empty()) {
+        int u = dequeue();
+
+        // Duyệt các đỉnh kề của u
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v] == 1 && !visited[v]) {
+                visited[v] = 1;
+                parent[v] = u; // Lưu đỉnh cha
+                enqueue(v);
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m, u, v;
+
+    // Đọc số đỉnh và số cạnh
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo đồ thị
+    init_graph(n);
+
+    // Đọc các cạnh
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d", &u, &v);
+        add_edge(u, v);
+    }
+
+    // Khởi tạo mảng visited và parent
+    memset(visited, 0, sizeof(visited));
+    memset(parent, -1, sizeof(parent));
+
+    // Duyệt qua toàn bộ đồ thị (xử lý trường hợp không liên thông)
+    for (int i = 1; i <= n; i++) {
+        if (!visited[i]) {
+            bfs(i, n);
+        }
+    }
+
+    // In kết quả
+    for (int i = 1; i <= n; i++) {
+        printf("%d %d\n", i, parent[i]);
+    }
+
+    return 0;
+}

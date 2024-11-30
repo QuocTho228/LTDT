@@ -1,0 +1,111 @@
+Viết chương trình đọc vào một đơn đồ thị có hướng và kiểm tra xem nó có chứa chu trình hay không. Nếu đồ thị có chu trình, in ra các đỉnh có trong chu trình.
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v mô tả cung (u, v).
+Đầu ra (Output):
+
+Nếu đồ thị có chu trình, in ra các đỉnh có trong chu trình trên cùng 1 dòng, cách nhau 1 khoảng trắng. Đỉnh đầu và đỉnh cuối của chu trình giống nhau.
+Nếu đồ thị không chứa chu trình, in ra -1
+Nếu đồ thị có nhiều chu trình, chỉ cần in ra 1 chu trình bất kỳ.
+Xem thêm ví dụ bên dưới.
+Trong ví dụ đầu tiên, ta tìm thấy chu trình 1 -> 3 -> 2 -> 1, vì thế chương trình phải in ra:
+
+```1 3 2 1```
+For example:
+
+Input	Result
+3 3	Chu trình hợp lệ.  
+1 3
+3 2
+2 1
+
+7 9	-1
+1 2
+1 3
+1 4
+2 3
+2 6
+3 7
+4 5
+5 3
+5 7
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+
+int n, m;  // số đỉnh và số cung
+int adj[MAX_N][MAX_N];  // ma trận kề
+int visited[MAX_N];  // trạng thái của đỉnh (0: UNVISITED, 1: VISITING, 2: VISITED)
+int parent[MAX_N];  // Mảng lưu trữ cha của mỗi đỉnh trong DFS
+
+// Mảng lưu trữ chu trình
+int cycle[MAX_N];
+int cycle_length = 0;
+
+// Hàm tìm chu trình trong DFS
+int dfs(int u) {
+    visited[u] = 1;  // Đánh dấu đỉnh u là đang thăm (VISITING)
+    
+    for (int v = 1; v <= n; v++) {
+        if (adj[u][v]) {
+            if (visited[v] == 1) {  // Nếu đỉnh v đang thăm, tức là gặp chu trình
+                // Tìm chu trình bằng cách theo cha của các đỉnh
+                int current = u;
+                cycle_length = 0;
+                cycle[cycle_length++] = v;
+                while (current != v) {
+                    cycle[cycle_length++] = current;
+                    current = parent[current];
+                }
+                cycle[cycle_length++] = v;
+                return 1;  // Đã tìm thấy chu trình
+            }
+            if (visited[v] == 0) {
+                parent[v] = u;  // Lưu lại cha của đỉnh v
+                if (dfs(v)) {  // Nếu đỉnh v có chu trình
+                    return 1;
+                }
+            }
+        }
+    }
+
+    visited[u] = 2;  // Đánh dấu đỉnh u là đã thăm (VISITED)
+    return 0;
+}
+
+int main() {
+    // Đọc vào số đỉnh và số cung
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo ma trận kề
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;  // Đánh dấu có cung từ u đến v
+    }
+
+    // Kiểm tra tất cả các đỉnh để tìm chu trình
+    for (int i = 1; i <= n; i++) {
+        if (visited[i] == 0 && dfs(i)) {
+            // In ra chu trình
+            for (int i = cycle_length - 1; i >= 0; i--) {
+                printf("%d ", cycle[i]);
+            }
+            printf("\n");
+            return 0;
+        }
+    }
+
+    printf("-1\n");  // Nếu không có chu trình
+    return 0;
+}
+
+

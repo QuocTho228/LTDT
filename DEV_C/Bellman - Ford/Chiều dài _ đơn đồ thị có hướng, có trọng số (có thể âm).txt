@@ -1,0 +1,90 @@
+Viết chương trình đọc một đơn đồ thị có hướng, có trọng số (có thể âm) từ bàn phím và in ra chiều dài đường đi ngắn nhất từ đỉnh s đến đỉnh t (s và t cũng được đọc từ bàn phím).
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m (1≤n<100;0≤m<500)
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w (0≤w≤100)
+.
+Dòng cuối cùng chứa 2 số nguyên s và t.
+Dữ liệu đầu vào được đảm bảo là đồ thị không chứa chu trình âm.
+Đầu ra (Output)
+
+In ra màn hình chiều dài của đường đi ngắn nhất từ s đến t. Nếu không có đường đi từ 1 đến n, in ra -1.
+Xem thêm ví dụ bên dưới.
+Gợi ý
+
+Khi xét cung (u, v) nếu pi[u] = oo thì bỏ qua cung này, không xét.
+Sau khi kết thúc thuật toán nếu pi[u] = oo thì có nghĩa là không có đường đi từ s đến t.
+
+
+For example:
+
+Input	Result
+3 3	-2  	
+1 2 3
+2 3 -5
+1 3 4
+1 3
+
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define INF INT_MAX
+
+typedef struct {
+    int u, v, w;
+} Edge;
+
+void bellman_ford(int n, int m, Edge edges[], int s, int t) {
+    int dist[n + 1];
+    // Khởi tạo khoảng cách
+    for (int i = 1; i <= n; i++) {
+        dist[i] = INF;
+    }
+    dist[s] = 0;
+
+    // Thực hiện thuật toán Bellman-Ford
+    for (int i = 1; i < n; i++) { // Lặp n-1 lần
+        for (int j = 0; j < m; j++) {
+            int u = edges[j].u;
+            int v = edges[j].v;
+            int w = edges[j].w;
+
+            if (dist[u] != INF && dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+
+    // In ra kết quả
+    if (dist[t] == INF) {
+        printf("-1\n");
+    } else {
+        printf("%d\n", dist[t]);
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    Edge edges[m];
+
+    // Đọc các cung
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+    }
+
+    int s, t;
+    scanf("%d %d", &s, &t);
+
+    // Thực hiện thuật toán Bellman-Ford
+    bellman_ford(n, m, edges, s, t);
+
+    return 0;
+}
+

@@ -1,0 +1,85 @@
+Cho đồ thị vô hướng, liên thông và có trọng số G = <V, E>. Viết chương trình tìm cây khung có trọng số nhỏ nhất bằng thuật toán Prim. Giả sử ta luôn chọn đỉnh 1 làm đỉnh khởi tạo.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w.
+Đầu ra (Output)
+
+In ra màn hình các đỉnh được chọn theo thứ tự của thuật toán Prim, mỗi đỉnh trên 1 dòng.
+Xem thêm ví dụ trong phần For example. Trong ví dụ 1, đầu tiên ta chọn đỉnh 1, kế tiếp ta chọn đỉnh 2, kế tiếp là đỉnh 3 và sau cùng là đỉnh 4.
+
+For example:
+
+Input	Result
+4 4	1
+1 2 4	2
+2 3 6	3
+3 4 1	4
+1 4 8
+
+
+#include <stdio.h>
+#include <limits.h>
+#include <stdbool.h>
+
+#define MAX 1000 // Số đỉnh tối đa
+
+// Hàm tìm đỉnh có trọng số nhỏ nhất chưa được thăm
+int findMinVertex(int minEdge[], bool visited[], int n) {
+    int minWeight = INT_MAX, minVertex = -1;
+    for (int i = 1; i <= n; i++) {
+        if (!visited[i] && minEdge[i] < minWeight) {
+            minWeight = minEdge[i];
+            minVertex = i;
+        }
+    }
+    return minVertex;
+}
+
+// Thuật toán Prim để tìm cây khung nhỏ nhất
+void prim(int n, int graph[MAX][MAX]) {
+    bool visited[MAX] = {false};    // Mảng đánh dấu các đỉnh đã thăm
+    int minEdge[MAX];               // Trọng số nhỏ nhất để kết nối đến mỗi đỉnh
+    for (int i = 1; i <= n; i++)    // Khởi tạo các trọng số ban đầu là vô hạn
+        minEdge[i] = INT_MAX;
+
+    minEdge[1] = 0; // Bắt đầu từ đỉnh 1
+    for (int i = 1; i <= n; i++) {
+        // Tìm đỉnh có trọng số nhỏ nhất chưa được thăm
+        int u = findMinVertex(minEdge, visited, n);
+        visited[u] = true; // Đánh dấu đỉnh đã được thêm vào cây khung
+        printf("%d\n", u); // In ra đỉnh được thêm vào cây khung
+
+        // Cập nhật trọng số nhỏ nhất cho các đỉnh kề
+        for (int v = 1; v <= n; v++) {
+            if (graph[u][v] && !visited[v] && graph[u][v] < minEdge[v]) {
+                minEdge[v] = graph[u][v];
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m;
+    int graph[MAX][MAX] = {0}; // Ma trận trọng số của đồ thị
+
+    // Đọc số đỉnh và số cung
+    scanf("%d %d", &n, &m);
+
+    // Đọc các cạnh
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        scanf("%d %d %d", &u, &v, &w);
+        graph[u][v] = w;
+        graph[v][u] = w; // Vì đồ thị vô hướng
+    }
+
+    // Chạy thuật toán Prim
+    prim(n, graph);
+
+    return 0;
+}
+

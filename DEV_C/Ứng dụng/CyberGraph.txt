@@ -1,0 +1,139 @@
+Đất nước CyberGraph có n thành phố và m con đường. Mỗi con đường nối 2 thành phố lại với nhau. tất cả các con đường đều là đường 2 chiều, mỗi con đường có một chiều dài nào đó. giữa hai thành phố có nhiều nhất là 1 con đường.
+
+Tổng thổng của nước này dự định sẽ đi từ thành phố s đến thành phố t. Đương nhiên, ông ta sẽ chọn hành trình có tổng chiều dài các con đường đi qua ngắn nhất.
+
+Hãy giúp Ngài tổng thổng tìm hành trình ngắn nhất đi từ s đến t.
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+- Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số thành phố và số con đường.
+
+- m dòng tiếp theo mỗi dòng chứa 3 số nguyên u v d mô tả con đường nối hai thành phố u và v có chiều dài d.
+
+- Dòng cuối cùng chứa số nguyên s t là thành phố bắt đầu và kết thúc.
+
+Đầu ra (Output):
+
+In ra màn hình tổng chiều dài các con đường của hành trình ngắn nhất..
+
+Xem thêm ví dụ bên dưới.
+
+For example:
+
+Input	Result
+4 3	12
+1 2 5
+2 3 2
+3 4 5
+1 4
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX 100
+
+typedef struct {
+    int vertex;  // Đỉnh
+    int weight;  // Trọng số
+} Edge;
+
+typedef struct {
+    Edge edges[MAX][MAX]; // Ma trận kề
+    int n; // Số đỉnh
+    int m; // Số cung
+} Graph;
+
+// Hàm khởi tạo đồ thị
+void init_graph(Graph *G, int n, int m) {
+    G->n = n;
+    G->m = m;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            G->edges[i][j].vertex = -1; // Khởi tạo không có cung
+            G->edges[i][j].weight = INT_MAX; // Khởi tạo trọng số là vô cùng
+        }
+    }
+}
+
+// Hàm thêm cung vào đồ thị
+void add_edge(Graph *G, int u, int v, int d) {
+    G->edges[u][v].vertex = v; // Gán đỉnh v
+    G->edges[u][v].weight = d;  // Gán trọng số d
+    G->edges[v][u].vertex = u; // Gán đỉnh u (đường đi 2 chiều)
+    G->edges[v][u].weight = d;  // Gán trọng số d
+}
+
+// Hàm tìm đường đi ngắn nhất từ đỉnh s đến t
+int dijkstra(Graph *G, int start, int end) {
+    int distance[MAX];
+    int visited[MAX] = {0};
+
+    for (int i = 0; i < G->n; i++) {
+        distance[i] = INT_MAX; // Khởi tạo khoảng cách
+    }
+    distance[start] = 0; // Khởi đầu từ đỉnh s
+
+    for (int i = 0; i < G->n - 1; i++) {
+        int min_distance = INT_MAX;
+        int u = -1;
+
+        // Tìm đỉnh chưa được thăm có khoảng cách nhỏ nhất
+        for (int j = 0; j < G->n; j++) {
+            if (!visited[j] && distance[j] < min_distance) {
+                min_distance = distance[j];
+                u = j;
+            }
+        }
+
+        if (u == -1) break; // Nếu không còn đỉnh nào chưa được thăm
+
+        visited[u] = 1; // Đánh dấu đỉnh đã thăm
+
+        // Cập nhật khoảng cách cho các đỉnh kề
+        for (int v = 0; v < G->n; v++) {
+            if (G->edges[u][v].vertex != -1 && !visited[v]) {
+                if (distance[u] + G->edges[u][v].weight < distance[v]) {
+                    distance[v] = distance[u] + G->edges[u][v].weight;
+                }
+            }
+        }
+    }
+
+    return distance[end]; // Trả về khoảng cách từ s đến t
+}
+
+// Hàm chính
+int main() {
+    Graph G;
+    int n, m, u, v, d, s, t;
+
+    // Đọc số lượng thành phố và số con đường
+    scanf("%d%d", &n, &m);
+    init_graph(&G, n, m);
+
+    // Đọc các con đường và chiều dài
+    for (int e = 0; e < m; e++) {
+        scanf("%d%d%d", &u, &v, &d);
+        add_edge(&G, u - 1, v - 1, d); // Chuyển đổi chỉ số về 0
+    }
+
+    // Đọc thành phố bắt đầu và kết thúc
+    scanf("%d%d", &s, &t);
+    
+    // Tính toán tổng chiều dài của hành trình ngắn nhất
+    int result = dijkstra(&G, s - 1, t - 1);
+
+    // In ra kết quả
+    if (result == INT_MAX) {
+        printf("-1\n"); // Không có đường đi từ s đến t
+    } else {
+        printf("%d\n", result); // In ra tổng chiều dài của hành trình ngắn nhất
+    }
+
+    return 0;
+}

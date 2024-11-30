@@ -1,0 +1,49 @@
+Cho cấu trúc dữ liệu đồ thị Graph được cài đặt bằng phương pháp "Ma trận kề" dùng để lưu trữ các đồ thị có hướng (có thể chứa đa cung và chứa khuyên).
+
+```#define MAX_N 100
+typedef struct {
+    int n, m;
+    int A[MAX_N][MAX_N];
+} Graph;
+```
+Viết hàm int degree(Graph *pG, int u) để tính bậc của đỉnh theo mẫu (prototype):
+
+```int degree(Graph *pG, int u) {
+}```
+Chú ý
+
+Các tham số của hàm degree() luôn hợp lệ (1≤u≤n)
+, bạn không cần kiểm tra.
+Không nộp toàn bộ chương trình, chỉ nộp phần định nghĩa hàm degree().
+For example:
+
+Input	
+4 4
+1 3
+4 2
+3 1
+1 1
+
+Result
+deg(1) = 4
+deg(2) = 1
+deg(3) = 2
+deg(4) = 1
+
+
+
+int degree(Graph *pG, int u) {
+    int in_deg = 0, out_deg = 0;
+
+    // Tính bậc ra (out-degree): Tổng số cung xuất phát từ đỉnh u
+    for (int v = 1; v <= pG->n; v++) {
+        out_deg += pG->A[u][v];
+    }
+
+    // Tính bậc vào (in-degree): Tổng số cung đi đến đỉnh u
+    for (int v = 1; v <= pG->n; v++) {
+        in_deg += pG->A[v][u];
+    }
+
+    return in_deg + out_deg;
+}

@@ -1,0 +1,53 @@
+Cho cấu trúc dữ liệu đồ thị Graph được cài đặt bằng phương pháp "Danh sách cung" dùng để biểu diễn các đồ thị có hướng.
+
+```#define MAX_M 500
+typedef struct {
+    int u, v;
+} Edge;
+typedef struct {
+    int n, m;
+    Edge edges[MAX_M];
+} Graph;```
+Các cung được lưu trong danh sách edges với chỉ số từ 0, 1, 2, ..., m-1
+
+Viết hàm adjacent() để kiểm tra đỉnh u có kề với đỉnh v không theo mẫu (prototype):
+
+```int adjacent(Graph *pG, int u, int v) {
+}```
+Trả về 1, nếu u kề với v, ngược lại trả về 0.
+
+Chú ý
+
+Trong đồ thị vô hướng G, u kề với v khi G có cung (u, v).
+Giả sử các tham số của hàm adjacent() luôn hợp lệ, không cần phải kiểm tra.
+Không nộp toàn bộ chương trình, chỉ nộp phần định nghĩa hàm adjacent().
+For example:
+
+Test	
+init_graph(&G, 3);
+add_edge(&G, 1, 3);
+add_edge(&G, 2, 3);
+add_edge(&G, 2, 2);
+
+Result
+n = 3, m = 3
+1 KHONG ke voi 1.
+1 KHONG ke voi 2.
+1 ke voi 3.
+2 KHONG ke voi 1.
+2 ke voi 2.
+2 ke voi 3.
+3 KHONG ke voi 1.
+3 KHONG ke voi 2.
+3 KHONG ke voi 3.
+
+
+
+int adjacent(Graph *pG, int u, int v) {
+    for (int i = 0; i < pG->m; i++) {
+        if (pG->edges[i].u == u && pG->edges[i].v == v) {
+            return 1; // Có cung (u, v)
+        }
+    }
+    return 0; // Không có cung (u, v)
+}

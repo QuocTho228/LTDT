@@ -1,0 +1,141 @@
+Ô kiều (Ngưu Lang - Chức Nữ)
+
+"Ngưu Lang là vị thần chăn trâu của Ngọc Hoàng Thượng đế, vì say mê một tiên nữ phụ trách việc dệt vải tên là Chức Nữ nên bỏ bê việc chăn trâu, để trâu đi nghênh ngang vào điện Ngọc Hư. Chức Nữ cũng vì mê tiếng tiêu của Ngưu Lang nên trễ nải việc dệt vải. Ngọc Hoàng giận dữ, bắt cả hai phải ở cách xa nhau, người đầu sông Ngân, kẻ cuối sông.
+
+Sau đó, Ngọc Hoàng thương tình nên ra ơn cho hai người mỗi năm được gặp nhau vào ngày bảy tháng bảy âm lịch. Khi tiễn biệt nhau, Ngưu Lang và Chức Nữ khóc sướt mướt. Nước mắt của họ rơi xuống trần hóa thành cơn mưa và được người dưới trần gian đặt tên là mưa ngâu." (Theo wikipedia.com)
+
+Để gặp được nhau vào ngày 7/7, Ngưu Lang và Chức Nữ phải nhờ đến bầy quạ đen bắt cầu, gọi là Ô kiều, cho mình đi qua để gặp nhau.
+
+Sông Ngân Hà có n ngôi sao, giả sử được đánh số từ 1 đến n. Ngưu Lang ở tại ngôi sao Ngưu (Altair), được đánh số 1, còn Chức Nữ ở tại ngôi sao Chức Nữ (Vega) được đánh số n. Để bắt được một cây cầu từ ngôi sao này sang ngôi sao kia cần một số lượng quạ nào đó. Một khi con quạ ở cây cầu nào thì phải ở đó cho đến khi Ngưu Lang và Chức Nữ gặp được nhau.
+
+Quạ thì càng ngày càng hiếm, nên Ngưu Lang và Chức Nữ phải tính toán sao cho số lượng quạ ít nhất có thể.
+
+Hãy giúp Ngưu Lang và Chức Nữ viết chương trình tính xem cần phải nhờ đến ít nhất bao nhiêu con quạ để bắt cầu cho họ gặp nhau.
+
+Đầu vào (Input):
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số ngôi sao và số cặp sao có thể bắt cầu.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u v q nói rằng để bắt 1 cây cầu bắt qua hai ngôi sao u và v cần phải tốn q con quạ (0<q<100)
+.
+Đầu ra (Output):
+
+In ra màn hình số lượng quạ cần thiết.
+Xem thêm ví dụ bên dưới.
+For example:
+
+Input	Result
+4 3	8
+1 2 5
+2 3 2
+3 4 1
+
+4 3	7
+1 2 3
+2 4 4
+1 4 10
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX 100
+#define INF 999999999
+
+typedef struct {
+    int vertex;  // Đỉnh
+    int weight;  // Trọng số
+} Edge;
+
+typedef struct {
+    Edge edges[MAX][MAX]; // Ma trận kề
+    int n; // Số đỉnh
+    int m; // Số cung
+} Graph;
+
+// Hàm khởi tạo đồ thị
+void init_graph(Graph *G, int n, int m) {
+    G->n = n;
+    G->m = m;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            G->edges[i][j].vertex = -1; // Khởi tạo không có cung
+            G->edges[i][j].weight = INF; // Khởi tạo trọng số là vô cùng
+        }
+    }
+}
+
+// Hàm thêm cung vào đồ thị
+void add_edge(Graph *G, int u, int v, int q) {
+    G->edges[u][v].vertex = v; // Gán đỉnh v
+    G->edges[u][v].weight = q;  // Gán trọng số q
+}
+
+// Hàm tìm đường đi ngắn nhất từ đỉnh 1 đến n
+int dijkstra(Graph *G, int start, int end) {
+    int distance[MAX];
+    int visited[MAX] = {0};
+
+    for (int i = 0; i < G->n; i++) {
+        distance[i] = INF; // Khởi tạo khoảng cách
+    }
+    distance[start] = 0; // Khởi đầu từ đỉnh 1
+
+    for (int i = 0; i < G->n - 1; i++) {
+        int min_distance = INF;
+        int u = -1;
+
+        // Tìm đỉnh chưa được thăm có khoảng cách nhỏ nhất
+        for (int j = 0; j < G->n; j++) {
+            if (!visited[j] && distance[j] < min_distance) {
+                min_distance = distance[j];
+                u = j;
+            }
+        }
+
+        if (u == -1) break; // Nếu không còn đỉnh nào chưa được thăm
+
+        visited[u] = 1; // Đánh dấu đỉnh đã thăm
+
+        // Cập nhật khoảng cách cho các đỉnh kề
+        for (int v = 0; v < G->n; v++) {
+            if (G->edges[u][v].vertex != -1 && !visited[v]) {
+                if (distance[u] + G->edges[u][v].weight < distance[v]) {
+                    distance[v] = distance[u] + G->edges[u][v].weight;
+                }
+            }
+        }
+    }
+
+    return distance[end]; // Trả về khoảng cách từ đỉnh 1 đến n
+}
+
+// Hàm chính
+int main() {
+    Graph G;
+    int n, m, u, v, q;
+
+    // Đọc số lượng ngôi sao và số cặp sao
+    scanf("%d%d", &n, &m);
+    init_graph(&G, n, m);
+
+    // Đọc các cặp sao và trọng số
+    for (int e = 0; e < m; e++) {
+        scanf("%d%d%d", &u, &v, &q);
+        add_edge(&G, u - 1, v - 1, q); // Chuyển đổi chỉ số về 0
+        add_edge(&G, v - 1, u - 1, q); // Thêm cung ngược lại vì đồ thị vô hướng
+    }
+
+    // Tính toán số lượng quạ cần thiết
+    int result = dijkstra(&G, 0, n - 1);
+
+    if (result == INF) {
+        printf("-1\n"); // Không có đường đi từ 1 đến n
+    } else {
+        printf("%d\n", result); // In ra số quạ cần thiết
+    }
+
+    return 0;
+}

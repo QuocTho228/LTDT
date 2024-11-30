@@ -1,0 +1,93 @@
+Viết chương trình đọc vào một đơn đồ thị có hướng, có trọng số, kiểm tra xem nó có chứa chu trình âm hay không.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ dòng nhập chuẩn (bàn phím, stdin) với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w nói rằng cung (u, v) có trọng số w.
+Đầu ra (Output)
+
+In ra màn hình YES nếu phát hiện có chu trình âm, ngược lại in ra NO.
+Xem thêm ví dụ bên dưới.
+
+
+For example:
+
+Input	Result
+4 4	YES
+1 2 1
+2 3 -1
+3 4 -1
+4 1 -1
+
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define MAX_N 100
+#define MAX_M 500
+
+typedef struct {
+    int u, v, w;
+} Edge;
+
+int main() {
+    int n, m; // n: số đỉnh, m: số cung
+    scanf("%d %d", &n, &m);
+
+    Edge edges[MAX_M];
+
+    // Đọc các cung của đồ thị
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+    }
+
+    // Mảng dist[] chứa độ dài ngắn nhất từ mỗi đỉnh
+    long long dist[MAX_N];
+
+    // Chạy thuật toán Bellman-Ford từ mỗi đỉnh
+    for (int source = 0; source < n; source++) {
+        // Khởi tạo mảng dist
+        for (int i = 0; i < n; i++) {
+            dist[i] = LLONG_MAX; // Khởi tạo với giá trị vô cùng lớn
+        }
+        dist[source] = 0; // Khởi tạo đỉnh nguồn với giá trị 0
+
+        // Thuật toán Bellman-Ford: Lặp qua n-1 lần
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < m; j++) {
+                int u = edges[j].u - 1;  // Chuyển thành chỉ số mảng
+                int v = edges[j].v - 1;  // Chuyển thành chỉ số mảng
+                int w = edges[j].w;
+                if (dist[u] != LLONG_MAX && dist[u] + w < dist[v]) {
+                    dist[v] = dist[u] + w;
+                }
+            }
+        }
+
+        // Kiểm tra chu trình âm bằng cách lặp thêm 1 vòng nữa
+        int hasNegativeCycle = 0;
+        for (int j = 0; j < m; j++) {
+            int u = edges[j].u - 1;  // Chuyển thành chỉ số mảng
+            int v = edges[j].v - 1;  // Chuyển thành chỉ số mảng
+            int w = edges[j].w;
+            if (dist[u] != LLONG_MAX && dist[u] + w < dist[v]) {
+                hasNegativeCycle = 1;
+                break;
+            }
+        }
+
+        if (hasNegativeCycle) {
+            printf("YES\n");
+            return 0;  // Nếu phát hiện chu trình âm, in "YES" và kết thúc
+        }
+    }
+
+    // Nếu không có chu trình âm từ bất kỳ đỉnh nào
+    printf("NO\n");
+    return 0;
+}
+
+

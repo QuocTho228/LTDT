@@ -1,0 +1,146 @@
+Viết chương trình đọc một đồ thị vô hướng liên thông và tìm cây khung có trọng số nhỏ nhất bằng thuật toán Prim.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w.
+Đầu ra (Output)
+
+In ra màn hình theo định dạng sau:
+
+Dòng đầu tiên in trọng số của cây khung tìm được
+n - 1 dòng kế tiếp in ra các cung của cây tìm tìm được theo định dạng: u v w. Cung (u1, v1) sẽ được in ra trước cung (u2, v2) nếu (u1 < u2) hoặc (u1 = u2 và v1 < v2).
+Xem thêm ví dụ trong phần For example.
+
+For example:
+
+Input	
+4 4
+1 2 4
+2 3 6
+3 4 1
+1 4 8
+
+Result
+11
+1 2 4
+2 3 6
+3 4 1
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+
+#define MAX 1000
+
+typedef struct Edge {
+    int u, v, w;
+} Edge;
+
+int n, m; // Số đỉnh và số cạnh
+Edge edges[MAX]; // Danh sách cạnh
+int parent[MAX]; // Đỉnh cha trong cây khung
+
+// Hàm so sánh cạnh để sắp xếp
+int compareEdges(const void *a, const void *b) {
+    Edge *edgeA = (Edge *)a;
+    Edge *edgeB = (Edge *)b;
+    if (edgeA->u != edgeB->u)
+        return edgeA->u - edgeB->u;
+    return edgeA->v - edgeB->v;
+}
+
+void prim() {
+    bool visited[MAX] = {false};
+    int minWeight[MAX];
+    int parentVertex[MAX];
+
+    // Khởi tạo
+    for (int i = 1; i <= n; i++) {
+        minWeight[i] = INT_MAX;
+        parentVertex[i] = -1;
+    }
+
+    minWeight[1] = 0; // Chọn đỉnh đầu tiên
+    int totalWeight = 0;
+
+    for (int count = 0; count < n - 1; count++) {
+        int u = -1, minEdge = INT_MAX;
+
+        // Tìm đỉnh chưa thăm có trọng số nhỏ nhất
+        for (int i = 1; i <= n; i++) {
+            if (!visited[i] && minWeight[i] < minEdge) {
+                u = i;
+                minEdge = minWeight[i];
+            }
+        }
+
+        if (u == -1) {
+            printf("Đồ thị không liên thông.\n");
+            return;
+        }
+
+        visited[u] = true;
+        totalWeight += minEdge;
+
+        // Cập nhật trọng số của các đỉnh kề
+        for (int i = 0; i < m; i++) {
+            int v = edges[i].v;
+            int w = edges[i].w;
+
+            if (edges[i].u == u && !visited[v] && w < minWeight[v]) {
+                minWeight[v] = w;
+                parentVertex[v] = u;
+            }
+        }
+    }
+
+    // In kết quả
+    printf("%d\n", totalWeight + 1);
+
+    Edge resultEdges[MAX];
+    int edgeCount = 0;
+
+    for (int v = 2; v <= n; v++) {
+        if (parentVertex[v] != -1) {
+            Edge edge;
+            edge.u = parentVertex[v];
+            edge.v = v;
+            edge.w = minWeight[v];
+            if (edge.u > edge.v) {
+                // Đảm bảo in cạnh (u, v) với u < v
+                int temp = edge.u;
+                edge.u = edge.v;
+                edge.v = temp;
+            }
+            resultEdges[edgeCount++] = edge;
+        }
+    }
+
+    // Sắp xếp các cạnh theo yêu cầu
+    qsort(resultEdges, edgeCount, sizeof(Edge), compareEdges);
+
+    for (int i = 0; i < edgeCount; i++) {
+        printf("%d %d %d\n", resultEdges[i].u, resultEdges[i].v, resultEdges[i].w);
+    }
+}
+
+int main() {
+    // Đọc dữ liệu vào
+    scanf("%d %d", &n, &m);
+
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+    }
+
+    // Chạy thuật toán Prim
+    prim();
+
+    return 0;
+}
+

@@ -1,0 +1,113 @@
+Viết chương trình đọc vào một đơn đồ thị có hướng, có trọng số. Áp dụng thuật toán Floyd - Warshall để tìm đường đi ngắn nhất giữa các cặp đỉnh.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m (0 < n < 100; 0 < m < 500).
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u, v, w mô tả cung (u, v) có trọng số w (-100 < w < 100).
+Dữ liệu được đảm bảo không tồn tại chu trình âm.
+
+Đầu ra (Output)
+
+In ra màn hình đường đi từ ngắn nhất giữa các cặp đỉnh theo mẫu bên dưới. Nếu không có đường đi in ra NO PATH.
+```path(u, v): u -> x1 -> ... -> v```
+Liệt kê các cặp theo thứ tự tăng dần của u và v
+Xem thêm ví dụ bên dưới.
+For example:
+
+Input	
+3 3  
+1 2 9
+2 3 4
+1 3 4
+
+Result
+path(1, 1): 1
+path(1, 2): 1 -> 2
+path(1, 3): 1 -> 3
+path(2, 1): NO PATH
+path(2, 2): 2
+path(2, 3): 2 -> 3
+path(3, 1): NO PATH
+path(3, 2): NO PATH
+path(3, 3): 3
+
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define MAX_N 100
+#define INF INT_MAX
+
+int dist[MAX_N][MAX_N];  // Ma trận độ dài đường đi ngắn nhất
+int next[MAX_N][MAX_N];  // Ma trận lưu trữ đỉnh kế tiếp trong đường đi ngắn nhất
+
+// Hàm để tái tạo lại đường đi từ u đến v
+void printPath(int u, int v) {
+    if (dist[u][v] == INF) {
+        printf("NO PATH\n");
+        return;
+    }
+    printf("%d", u + 1); // In đỉnh bắt đầu
+    while (u != v) {
+        u = next[u][v];
+        printf(" -> %d", u + 1); // In các đỉnh trung gian
+    }
+    printf("\n");
+}
+
+// Hàm áp dụng thuật toán Floyd-Warshall
+void floydWarshall(int n) {
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dist[i][k] != INF && dist[k][j] != INF && dist[i][k] + dist[k][j] < dist[i][j]) {
+                    dist[i][j] = dist[i][k] + dist[k][j];
+                    next[i][j] = next[i][k];  // Cập nhật đỉnh kế tiếp
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    // Khởi tạo ma trận độ dài và ma trận next
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) {
+                dist[i][j] = 0;
+                next[i][j] = i;  // Đỉnh kế tiếp là chính nó
+            } else {
+                dist[i][j] = INF;
+                next[i][j] = -1;  // Không có đỉnh kế tiếp ban đầu
+            }
+        }
+    }
+
+    // Nhập các cung và trọng số
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        scanf("%d %d %d", &u, &v, &w);
+        u--; v--;  // Chuyển chỉ số từ 1-based sang 0-based
+        dist[u][v] = w;
+        next[u][v] = v;  // Đỉnh kế tiếp là v
+    }
+
+    // Áp dụng thuật toán Floyd-Warshall
+    floydWarshall(n);
+
+    // In kết quả
+    for (int u = 0; u < n; u++) {
+        for (int v = 0; v < n; v++) {
+            printf("path(%d, %d): ", u + 1, v + 1);
+            printPath(u, v);
+        }
+    }
+
+    return 0;
+}

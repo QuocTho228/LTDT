@@ -1,0 +1,94 @@
+David là huấn luyện viên của một đội bóng gồm N thành viên. David muốn chia đội bóng thành hai nhóm. Để tăng tính đa dạng của các thành viên trong nhóm, David quyết định không xếp hai thành viên đã từng thi đấu với nhau vào chung một nhóm. Bạn hãy lập trình giúp David phân chia đội bóng.
+
+Đầu vào (Input):
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên N và M, tương ứng là số thành viên và số cặp thành viên đã từng thi đấu với nhau.
+M dòng tiếp theo mỗi dòng chứa 2 số nguyên u v nói rằng 2 thành viên u và v đã từng thi đấu chung với nhau.
+Đầu ra (Output):
+
+Nếu phân chia được, hãy in ra các thành viên của mỗi nhóm. Nhóm của thành viên 1 sẽ được in trước, nhóm còn lại in ra sau. Các thành viên trong nhóm được in ra theo thứ tự tăng dần và in trên 1 dòng. Hai thành viên cách nhau 1 khoảng trắng.
+Nếu không thể phân chia, in ra IMPOSSIBLE
+Xem thêm các ví dụ bên dưới.
+
+For example:
+
+Input	Result
+3 2	1 3
+1 2	2
+2 3
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAXN 1000
+
+int N, M;  // số thành viên và số cặp đã thi đấu
+int adj[MAXN + 1][MAXN + 1];  // ma trận kề
+int color[MAXN + 1];  // mảng lưu màu của các thành viên, -1 là chưa có màu
+
+// Hàm DFS để kiểm tra tính phân đôi
+int dfs(int u, int col) {
+    color[u] = col;  // Gán màu cho thành viên u
+    for (int v = 1; v <= N; v++) {
+        if (adj[u][v]) {  // Nếu thành viên u và v đã thi đấu với nhau
+            if (color[v] == -1) {  // Nếu thành viên v chưa có màu
+                if (!dfs(v, 1 - col))  // Gọi đệ quy với màu ngược lại
+                    return 0;
+            } else if (color[v] == color[u]) {  // Nếu thành viên v và u cùng màu
+                return 0;  // Không thể phân chia được
+            }
+        }
+    }
+    return 1;
+}
+
+int main() {
+    // Đọc dữ liệu đầu vào
+    scanf("%d %d", &N, &M);
+
+    // Khởi tạo ma trận kề và mảng màu
+    for (int i = 1; i <= N; i++) {
+        color[i] = -1;  // Mỗi thành viên ban đầu chưa có màu
+        for (int j = 1; j <= N; j++) {
+            adj[i][j] = 0;  // Khởi tạo ma trận kề không có cung
+        }
+    }
+
+    // Đọc các cặp thi đấu và xây dựng ma trận kề
+    for (int i = 0; i < M; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = adj[v][u] = 1;  // Đồ thị vô hướng
+    }
+
+    // Kiểm tra tính phân đôi bằng DFS
+    for (int i = 1; i <= N; i++) {
+        if (color[i] == -1) {  // Nếu thành viên i chưa được màu
+            if (!dfs(i, 0)) {  // Bắt đầu từ màu 0
+                printf("IMPOSSIBLE\n");
+                return 0;
+            }
+        }
+    }
+
+    // In ra các thành viên của nhóm 1 và nhóm 2
+    // Nhóm 1 có màu 0, nhóm 2 có màu 1
+    for (int i = 1; i <= N; i++) {
+        if (color[i] == 0) {
+            printf("%d ", i);
+        }
+    }
+    printf("\n");
+
+    for (int i = 1; i <= N; i++) {
+        if (color[i] == 1) {
+            printf("%d ", i);
+        }
+    }
+    printf("\n");
+
+    return 0;
+}

@@ -1,0 +1,144 @@
+Khôi là người quản lý dự án của công ty phần mềm Grafity Ltd. Nhiệm vụ của anh là nhận dự án, phân tích và chia phân công các lập trình viên thực hiện nó. Khi nhận được dự án, việc đầu tiên của Khôi là phân chia dự án thành các công việc và ước lượng thời gian hoàn thành từng công việc. Ngoài ra, tùy theo dự án, các công việc này có thể phụ thuộc nhau ví dụ: công việc A cần phải làm xong rồi thì mới có thể thực hiện công việc B.
+
+Sau khi có được danh sách các công việc, thời gian hoàn thành các công việc và sự phụ thuộc giữa chúng. Khôi sẽ ước lượng được cần ít nhất bao nhiêu thời gian để hoàn thành dự án. Làm thủ công khá mất thời gian nên Khôi mới nhờ đến bạn. Hãy lập trình để giúp anh ấy.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 1 số nguyên n là số công việc.
+Dòng thứ 2 chứa n số nguyên tương ứng với thời gian hoàn thành của n công việc
+Dòng thứ 3 chứa 1 số nguyên m cho biết số cặp công việc phụ thuộc nhau
+m dòng tiếp theo, mỗi dòng chứa 2 số nguyên A B nói rằng phải hoàn thành công việc A xong thì mới có thể bắt đầu B..
+Đầu ra (Output)
+
+In ra màn hình một số nguyên duy nhất cho biết tổng thời gian ít nhất để hoàn thành dự án.
+For example:
+
+Input			Result
+10
+7 3 1 8 2 1 1 2 2 1	21
+14
+1 2
+1 4
+2 3
+4 5
+4 6
+4 7
+3 5
+3 6
+3 7
+6 8
+8 9
+9 10
+6 10
+7 10
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 1000
+
+typedef struct Node {
+    int vertex;
+    struct Node* next;
+} Node;
+
+typedef struct Graph {
+    int numVertices;
+    Node* adjList[MAX];
+    int indegree[MAX];
+} Graph;
+
+Graph* createGraph(int vertices) {
+    Graph* graph = (Graph*)malloc(sizeof(Graph));
+    graph->numVertices = vertices;
+
+    for (int i = 1; i <= vertices; i++) {
+        graph->adjList[i] = NULL;
+        graph->indegree[i] = 0;
+    }
+
+    return graph;
+}
+
+void addEdge(Graph* graph, int src, int dest) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->vertex = dest;
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    graph->indegree[dest]++;
+}
+
+int calculateProjectTime(Graph* graph, int* times) {
+    int queue[MAX], front = 0, rear = 0;
+    int time[MAX] = {0};
+
+    // Khởi tạo thời gian cho các công việc không có phụ thuộc
+    for (int i = 1; i <= graph->numVertices; i++) {
+        time[i] = times[i];
+        if (graph->indegree[i] == 0) {
+            queue[rear++] = i; // Đưa các công việc không có phụ thuộc vào hàng đợi
+        }
+    }
+
+    // Duyệt Topological Sort và tính thời gian hoàn thành
+    while (front < rear) {
+        int u = queue[front++];
+
+        Node* temp = graph->adjList[u];
+        while (temp) {
+            int v = temp->vertex;
+            graph->indegree[v]--;
+
+            // Cập nhật thời gian tối thiểu để hoàn thành công việc v
+            if (time[v] < time[u] + times[v]) {
+                time[v] = time[u] + times[v];
+            }
+
+            if (graph->indegree[v] == 0) {
+                queue[rear++] = v;
+            }
+
+            temp = temp->next;
+        }
+    }
+
+    // Tìm thời gian lớn nhất trong mảng time
+    int maxTime = 0;
+    for (int i = 1; i <= graph->numVertices; i++) {
+        if (time[i] > maxTime) {
+            maxTime = time[i];
+        }
+    }
+
+    return maxTime;
+}
+
+int main() {
+    int n, m;
+    scanf("%d", &n);
+
+    int times[MAX];
+    for (int i = 1; i <= n; i++) {
+        scanf("%d", &times[i]);
+    }
+
+    scanf("%d", &m);
+
+    Graph* graph = createGraph(n);
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        addEdge(graph, u, v);
+    }
+
+    int result = calculateProjectTime(graph, times);
+    printf("%d\n", result);
+
+    return 0;
+}
+

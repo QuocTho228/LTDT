@@ -1,0 +1,111 @@
+Cho mạng được biểu diễn bằng đồ thị n đỉnh, m cung. Đỉnh phát s = 1 và đỉnh thu t = n. Mỗi cung (u, v) có khả năng thông qua là C[u][v] và luồng đi qua nó là F[u][v]. Để tìm luồng lớn nhất trên mạng bằng giải thuật Ford - Fulkerson, ta phải khởi tạo một luồng hợp lệ nào đó trên mạng và sau đó tìm cách tăng luồng.
+
+Luồng hợp lệ phải thoả mãn các yêu cầu sau:
+
+0 <= F[u][v] <= C[u][v], với mọi cung (u, v)
+Tổng luồng đi ra khỏi đỉnh s = Tổng luồng đi vào đỉnh t
+Tổng luồng đi vào đỉnh u = Tổng luồng đi ra khỏi u (u khác s và u khác t)
+Luồng tầm thường (trivial flow) là luồng có F[u][v] = 0 với mọi cung (u,v). Dĩ nhiên luồng tầm thường là luồng hợp lệ.
+
+Giả sử người ta đã khởi tạo giá trị cho các luồng F[u][v] trên mạng, hãy viết chương trình kiểm tra xem luồng khởi tạo có hợp lệ không.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 3 số nguyên u v c f mô tả cung (u, v) có khả năng thông qua c và luồng khởi tạo f.
+Đầu ra (Output):
+
+Nếu luồng khởi tạo của mạng hợp lệ, in ra màn hình YES, ngược lại in ra NO.
+Xem thêm ví dụ trong phần For example.
+
+For example:
+
+Input	Result
+3 3	YES  
+1 2 9 0
+2 3 4 0
+1 3 4 0
+
+3 3	YES  
+1 2 9 3
+2 3 4 3
+1 3 4 1
+
+
+#include <stdio.h>
+
+#define MAXN 100
+#define MAXM 100
+
+int n, m;
+int C[MAXN][MAXN];  // Khả năng thông qua của các cung
+int F[MAXN][MAXN];  // Luồng đi qua các cung
+
+// Hàm kiểm tra luồng hợp lệ
+int isValidFlow() {
+    // Kiểm tra khả năng thông qua cung: 0 <= F[u][v] <= C[u][v]
+    for (int u = 1; u <= n; u++) {
+        for (int v = 1; v <= n; v++) {
+            if (F[u][v] < 0 || F[u][v] > C[u][v]) {
+                return 0;  // Nếu không hợp lệ, trả về 0
+            }
+        }
+    }
+
+    // Kiểm tra tổng luồng ra khỏi đỉnh s (đỉnh 1) và tổng luồng vào đỉnh t (đỉnh n)
+    int flowOutS = 0, flowInT = 0;
+    for (int v = 1; v <= n; v++) {
+        flowOutS += F[1][v];  // Luồng ra khỏi đỉnh 1
+        flowInT += F[v][n];   // Luồng vào đỉnh n
+    }
+    if (flowOutS != flowInT) {
+        return 0;  // Nếu không bằng nhau, trả về 0
+    }
+
+    // Kiểm tra điều kiện tổng luồng vào và ra tại các đỉnh u khác s và t
+    for (int u = 2; u < n; u++) {
+        int flowInU = 0, flowOutU = 0;
+        for (int v = 1; v <= n; v++) {
+            flowOutU += F[u][v];  // Luồng ra khỏi đỉnh u
+            flowInU += F[v][u];   // Luồng vào đỉnh u
+        }
+        if (flowInU != flowOutU) {
+            return 0;  // Nếu không bằng nhau, trả về 0
+        }
+    }
+
+    // Nếu tất cả các điều kiện đều hợp lệ
+    return 1;
+}
+
+int main() {
+    // Đọc dữ liệu đầu vào
+    scanf("%d %d", &n, &m);
+    
+    // Khởi tạo mảng khả năng thông qua và luồng
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            C[i][j] = 0;  // Ban đầu, khả năng thông qua là 0
+            F[i][j] = 0;  // Ban đầu, luồng là 0
+        }
+    }
+
+    // Đọc các cung
+    for (int i = 0; i < m; i++) {
+        int u, v, c, f;
+        scanf("%d %d %d %d", &u, &v, &c, &f);
+        C[u][v] = c;  // Cập nhật khả năng thông qua
+        F[u][v] = f;  // Cập nhật luồng khởi tạo
+    }
+
+    // Kiểm tra tính hợp lệ của luồng
+    if (isValidFlow()) {
+        printf("YES\n");
+    } else {
+        printf("NO\n");
+    }
+
+    return 0;
+}

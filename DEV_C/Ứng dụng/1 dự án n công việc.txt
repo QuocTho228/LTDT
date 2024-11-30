@@ -1,0 +1,148 @@
+Cho một dự án gồm n công việc. Mỗi công việc u có một thời gian hoàn thành d[u] và một danh sách các công việc phải hoàn thành trước khi thực hiện u. Hãy tính thời gian sớm nhất và thời gian trễ nhất để bắt đầu các công việc.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 1 số nguyên n là số công việc.
+n dòng tiếp theo, dòng thứ u chứa số nguyên d[u] là thời gian cần thiết để hoàn thành công việc u và một danh sách các công việc cần phải hoàn thành trước khi bắt đầu công việc u. Danh sách được kết thúc bằng số 0.
+Đầu ra (Output)
+
+In ra màn hình n dòng, dòng thứ u gồm 2 số nguyên t[u] (thời gian sớm nhất để bắt đầu công việc u) và T[u] (thời gian trễ nhất để bắt đầu công việc u).
+For example:
+
+Input	
+10
+7 0
+3 1 0
+1 2 0
+8 1 0
+2 3 4 0
+1 3 4 0
+1 3 4 0
+2 6 0
+2 8 0
+1 5 7 9 0
+
+Result
+0 0
+7 11
+10 14
+7 7
+15 18
+15 15
+15 19
+16 16
+18 18
+20 20
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+
+#define MAX 100
+
+int n; // số công việc
+int d[MAX]; // thời gian hoàn thành từng công việc
+int adj[MAX][MAX]; // ma trận kề để lưu các phụ thuộc
+int indegree[MAX]; // mảng lưu số lượng phụ thuộc của mỗi công việc
+int topo[MAX]; // thứ tự topo
+int t[MAX]; // thời gian sớm nhất để bắt đầu
+int T[MAX]; // thời gian trễ nhất để bắt đầu
+
+void read_input() {
+    scanf("%d", &n);
+    memset(adj, 0, sizeof(adj));
+    memset(indegree, 0, sizeof(indegree));
+
+    for (int u = 0; u < n; u++) {
+        int v;
+        scanf("%d", &d[u]);
+        while (1) {
+            scanf("%d", &v);
+            if (v == 0) break;
+            adj[v - 1][u] = 1; // đánh dấu phụ thuộc từ công việc v đến u
+            indegree[u]++;
+        }
+    }
+}
+
+void topological_sort() {
+    int queue[MAX], front = 0, rear = 0;
+    for (int i = 0; i < n; i++) {
+        if (indegree[i] == 0) queue[rear++] = i;
+    }
+
+    int idx = 0;
+    while (front < rear) {
+        int u = queue[front++];
+        topo[idx++] = u;
+
+        for (int v = 0; v < n; v++) {
+            if (adj[u][v]) {
+                indegree[v]--;
+                if (indegree[v] == 0) queue[rear++] = v;
+            }
+        }
+    }
+}
+
+void calculate_times() {
+    // Khởi tạo thời gian sớm nhất
+    memset(t, 0, sizeof(t));
+
+    // Tính thời gian sớm nhất
+    for (int i = 0; i < n; i++) {
+        int u = topo[i];
+        for (int v = 0; v < n; v++) {
+            if (adj[u][v]) {
+                if (t[v] < t[u] + d[u]) {
+                    t[v] = t[u] + d[u];
+                }
+            }
+        }
+    }
+
+    // Tính thời gian hoàn thành dự án
+    int project_completion_time = 0;
+    for (int i = 0; i < n; i++) {
+        if (t[i] + d[i] > project_completion_time) {
+            project_completion_time = t[i] + d[i];
+        }
+    }
+
+    // Khởi tạo thời gian trễ nhất
+    for (int i = 0; i < n; i++) {
+        T[i] = project_completion_time - d[i];
+    }
+
+    // Tính thời gian trễ nhất
+    for (int i = n - 1; i >= 0; i--) {
+        int u = topo[i];
+        for (int v = 0; v < n; v++) {
+            if (adj[u][v]) {
+                if (T[u] > T[v] - d[u]) {
+                    T[u] = T[v] - d[u];
+                }
+            }
+        }
+    }
+}
+
+void print_results() {
+    for (int i = 0; i < n; i++) {
+        printf("%d %d\n", t[i], T[i]);
+    }
+}
+
+int main() {
+    read_input();
+    topological_sort();
+    calculate_times();
+    print_results();
+    return 0;
+}
+

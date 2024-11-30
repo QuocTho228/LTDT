@@ -1,0 +1,111 @@
+Viết chương trình đọc vào một đồ thị có hướng và tìm bộ phận liên thông mạnh có nhiều đỉnh nhất.
+
+Đầu vào (Input)
+
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u, v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra màn hình số đỉnh của BPLT mạnh có nhiều đỉnh nhất.
+Xem thêm ví dụ bên dưới.
+For example:
+
+Input	Result
+5 6	3
+1 2
+2 3
+3 1
+2 4
+3 4
+5 3
+
+8 13	5
+1 2
+1 3
+2 1
+2 8
+3 4
+3 5
+4 2
+4 7
+4 8
+5 3
+5 7
+6 7
+7 6
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_N 1000
+
+int n, m;  // Số đỉnh và số cung
+int adj[MAX_N][MAX_N];  // Ma trận kề của đồ thị
+int adj_rev[MAX_N][MAX_N];  // Ma trận kề của đồ thị đảo ngược
+int visited[MAX_N], finish_stack[MAX_N], finish_time = 0;
+
+int dfs2(int u) {
+    visited[u] = 1;
+    int size = 1;  // Bắt đầu tính số đỉnh của SCC này
+    for (int v = 1; v <= n; ++v) {
+        if (adj_rev[u][v] && !visited[v]) {
+            size += dfs2(v);  // Tính số đỉnh trong SCC
+        }
+    }
+    return size;
+}
+
+void dfs1(int u) {
+    visited[u] = 1;
+    for (int v = 1; v <= n; ++v) {
+        if (adj[u][v] && !visited[v]) {
+            dfs1(v);
+        }
+    }
+    finish_stack[finish_time++] = u;  // Lưu thứ tự hoàn thành
+}
+
+int main() {
+    // Đọc dữ liệu đầu vào
+    scanf("%d %d", &n, &m);
+    
+    // Khởi tạo ma trận kề
+    for (int i = 0; i < m; ++i) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;
+        adj_rev[v][u] = 1;  // Đồ thị đảo ngược
+    }
+
+    // Bước 1: DFS trên đồ thị ban đầu để lưu thứ tự hoàn thành
+    for (int i = 1; i <= n; ++i) visited[i] = 0;
+    for (int i = 1; i <= n; ++i) {
+        if (!visited[i]) {
+            dfs1(i);
+        }
+    }
+
+    // Bước 2: DFS trên đồ thị đảo ngược theo thứ tự hoàn thành
+    for (int i = 1; i <= n; ++i) visited[i] = 0;
+    int max_scc_size = 0;
+    for (int i = finish_time - 1; i >= 0; --i) {
+        int u = finish_stack[i];
+        if (!visited[u]) {
+            // Bắt đầu một DFS mới, tìm một SCC và đếm số đỉnh của nó
+            int size = dfs2(u);
+            if (size > max_scc_size) {
+                max_scc_size = size;
+            }
+        }
+    }
+
+    // In ra số đỉnh của bộ phận liên thông mạnh có nhiều đỉnh nhất
+    printf("%d\n", max_scc_size);
+
+    return 0;
+}
+

@@ -1,0 +1,128 @@
+Cho một đồ thị vô hướng đơn. Hãy dựng (các) cây DUYỆT ĐỒ THỊ khi duyệt đồ thị theo chiều sâu bắt đầu từ đỉnh 1.
+
+Nếu vẫn còn đỉnh chưa duyệt sau khi duyệt xong lần 1, tìm đỉnh có chỉ số nhỏ nhất chưa duyệt mà duyệt nó, và cứ tiếp tục như thế cho đến khi tất cả các đỉnh đều được duyệt.
+
+Quy ước:
+
+Các đỉnh kề của 1 đỉnh được liệt kê theo thứ tự tăng dần
+Nếu cài đặt dùng ngăn xếp hãy đưa các đỉnh kề của đỉnh u vào ngăn xếp theo thứ tự từ lớn đến nhỏ
+Đầu vào (Input)
+Dữ liệu đầu vào được nhập từ bàn phím với định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m, tương ứng là số đỉnh và số cung.
+m dòng tiếp theo mỗi dòng chứa 2 số nguyên u v mô tả cung (u, v).
+Đầu ra (Output)
+
+In ra cây duyệt đồ thị theo định dạng:
+```lang:cpp;;
+1 <đỉnh cha của 1>
+2 <đỉnh cha của 2>
+....
+i <đỉnh cha của i>
+...
+n <đỉnh cha của n>```
+Nếu 1 đỉnh không có đỉnh cha (nó là đỉnh gốc của cây) thì đỉnh cha của nó là -1.
+Xem thêm các ví dụ bên dưới.
+Gợi ý
+
+Sử dụng mảng parent[u] để lưu đỉnh cha của đỉnh u.
+Trong quá trình duyệt, thay vì in các đỉnh ra màn hình, ghi nhận lại đỉnh cha của các đỉnh.
+Khi duyệt xong lần lượt in ra u và parent[u] (u chạy từ 1 đến n).
+Hướng dẫn đọc dữ liệu và chạy thử chương trình
+
+Để chạy thử chương trình, bạn nên tạo một tập tin dt.txt chứa đồ thị cần kiểm tra.
+Thêm dòng freopen("dt.txt", "r", stdin); vào ngay sau hàm main(). Khi nộp bài, nhớ gỡ bỏ dòng này ra.
+Có thể sử dụng đoạn chương trình đọc dữ liệu mẫu sau đây:
+```lang:cpp;;
+freopen("dt.txt", "r", stdin); //Khi nộp bài nhớ bỏ dòng này.
+Graph G;
+int n, m, u, v, w, e;
+scanf("%d%d", &n, &m);
+init_graph(&G, n);
+
+for (e = 0; e < m; e++) {
+    scanf("%d%d", &u, &v);
+    add_edge(&G, u, v);
+}
+```
+For example:
+
+Input	
+4 3
+2 1
+1 4
+2 4
+
+Result
+1 -1
+2 1
+3 -1
+4 2
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAXN 1000
+
+int n, m; // số đỉnh và số cung
+int adj[MAXN][MAXN]; // ma trận kề
+int visited[MAXN]; // mảng đánh dấu các đỉnh đã được duyệt
+int parent[MAXN];  // mảng lưu đỉnh cha của mỗi đỉnh
+
+// Hàm thêm cung (u, v) vào đồ thị
+void add_edge(int u, int v) {
+    adj[u][v] = 1;
+    adj[v][u] = 1;
+}
+
+// Hàm duyệt đồ thị theo chiều sâu (DFS)
+void dfs(int u) {
+    visited[u] = 1; // Đánh dấu đỉnh u là đã duyệt
+
+    // Duyệt các đỉnh kề của u
+    for (int v = 1; v <= n; v++) {
+        if (adj[u][v] && !visited[v]) { // Nếu v kề với u và chưa duyệt
+            parent[v] = u; // Lưu đỉnh u là cha của v
+            dfs(v); // Tiếp tục duyệt theo chiều sâu từ v
+        }
+    }
+}
+
+int main() {
+    // Đọc dữ liệu
+    scanf("%d%d", &n, &m);
+    for (int i = 0; i < MAXN; i++) {
+        for (int j = 0; j < MAXN; j++) {
+            adj[i][j] = 0; // Khởi tạo ma trận kề
+        }
+        visited[i] = 0; // Khởi tạo mảng visited
+        parent[i] = -1; // Khởi tạo mảng parent
+    }
+
+    // Đọc các cung
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        scanf("%d%d", &u, &v);
+        add_edge(u, v);
+    }
+
+    // Duyệt đồ thị
+    dfs(1); // Bắt đầu duyệt từ đỉnh 1
+
+    // Nếu sau lần duyệt đầu tiên vẫn còn đỉnh chưa duyệt, tiếp tục duyệt
+    for (int i = 1; i <= n; i++) {
+        if (!visited[i]) {
+            dfs(i);
+        }
+    }
+
+    // In ra cây duyệt đồ thị
+    for (int i = 1; i <= n; i++) {
+        printf("%d %d\n", i, parent[i]);
+    }
+
+    return 0;
+}
+
