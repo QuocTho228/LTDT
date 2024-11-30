@@ -1,0 +1,106 @@
+ết chương trình bằng ngôn ngữ C cho phép đọc dữ liệu của một đồ thị từ tập tin và in bậc của các đỉnh ra màn hình.
+
+Đầu vào
+
+Dữ liệu đầu vào được đọc từ tập tin dt.txt (cùng thư mục với chương trình thực thi) theo định dạng:
+
+Dòng đầu tiên chứa 2 số nguyên n và m cách nhau một khoảng trắng, n: số đỉnh, m: số cung
+m dòng tiếp theo, mỗi dòng chứa 2 số nguyên u v cách nhau 1 khoảng trắng mô tả cung (u, v).
+Đầu ra
+
+
+In ra n dòng, dòng thứ i in bậc của đỉnh i, theo mẫu: deg(2) = 3
+Chú ý
+
+Giả sử dữ liệu đầu vào luôn hợp lệ, không cần phải kiểm tra
+Nộp toàn bộ chương trình
+Xem thêm định dạng đầu vào và đầu ra trong phần For example
+Ấn "Precheck" (nếu có) để kiểm tra chương trình trên các ví dụ (sai KHÔNG bị trừ điểm)
+Ấn "Check" (nếu có) để kiểm tra chương trình trên toàn bộ dữ liệu kiểm tra (sai bị TRỪ ĐIỂM)
+For example:
+
+Input	
+>dt.txt <<<EOD
+4 5
+1 3
+4 2
+2 4
+2 4
+3 2
+EOD
+
+Result
+deg(1) = 1
+deg(2) = 4
+deg(3) = 2
+deg(4) = 3
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Cấu trúc danh sách cung
+typedef struct {
+    int u, v; // Đỉnh bắt đầu và đỉnh kết thúc của cung
+} Edge;
+
+typedef struct {
+    Edge edges[100]; // Mảng chứa các cung (giả định tối đa 100 cung)
+    int n, m;        // Số đỉnh và số cung
+} Graph;
+
+// Hàm khởi tạo đồ thị
+void init_graph(Graph *G, int n) {
+    G->n = n; // Gán số đỉnh
+    G->m = 0; // Ban đầu chưa có cung nào
+}
+
+// Hàm thêm cung vào đồ thị
+void add_edge(Graph *G, int u, int v) {
+    G->edges[G->m].u = u; // Gán đỉnh bắt đầu
+    G->edges[G->m].v = v; // Gán đỉnh kết thúc
+    G->m++;               // Tăng số cung
+}
+
+// Hàm tính bậc của một đỉnh
+int degree(Graph *G, int u) {
+    int deg = 0;
+    for (int i = 0; i < G->m; i++) {
+        if (G->edges[i].u == u) deg++; // Đếm nếu u là đỉnh bắt đầu
+        if (G->edges[i].v == u) deg++; // Đếm nếu u là đỉnh kết thúc
+    }
+    return deg;
+}
+
+// Hàm chính
+int main() {
+    Graph G;
+    int n, m, u, v;
+
+    //Mở tệp để đọc
+    FILE *file = fopen("dt.txt", "r");
+    if (file == NULL) {
+        printf("Khong the mo tap tin dt.txt\n");
+        return 1;
+    }
+
+    // Đọc số đỉnh và số cung từ tệp
+    fscanf(file, "%d %d", &n, &m);
+    init_graph(&G, n);
+
+    // Đọc các cung từ tệp
+    for (int i = 0; i < m; i++) {
+        fscanf(file, "%d %d", &u, &v);
+        add_edge(&G, u, v);
+    }
+
+    // Đóng tệp
+    fclose(file);
+
+    // Tính và in bậc của các đỉnh
+    for (int i = 1; i <= n; i++) {
+        printf("deg(%d) = %d\n", i, degree(&G, i));
+    }
+
+    return 0;
+}
