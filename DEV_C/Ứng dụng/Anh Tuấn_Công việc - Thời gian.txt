@@ -1,0 +1,194 @@
+Việc thực hiện một dự án phát triển phần mềm được bố trí thành các công việc và thời gian thực hiện như sau:
+
+Dự án phần mềm
+
+- Anh Tuấn là một thành viên trong nhóm phát triển phần mềm. Anh ta thường hay hỏi mọi thành viên trong nhóm các câu hỏi tương tự như sau: "Nếu công việc E mình bắt đầu làm vào ngày thứ 60 thì tổng thời gian thực hiện dự án có bị ảnh hưởng không?" "Nếu công việc H mình bắt đầu làm vào ngày thứ 50 thì tổng thời gian thực hiện dự án có bị ảnh hưởng không?". Anh ta hỏi mọi người hoài những câu hỏi tương tự như thế làm cho các thành viên trong nhóm bực bội. Biết rằng dựa vào bảng công việc người ta có thể xác định thời điểm sớm nhất và trể nhất để bắt đầu cho mỗi công việc mà không ảnh hưởng đến tiến độ của dự án phần mềm. Hãy viết chương trình để giúp anh Tuấn tự trả lời câu hỏi của mình. 
+
+Để đơn giản trong cài đặt, ta đánh số lại các công việc theo thứ tự 1, 2, 3 thay vì A, B, C và lưu vào tập tin theo định dạng như sau:
+
+Công việc phần mềm
+
+Đầu vào:
+12
+14 0
+12 1 0
+30 2 0
+9 2 0
+14 3 0
+18 3 0
+15 3 0
+19 3 0
+10 6 7 8 0
+15 5 9 0
+12 4 10 0
+4 11 0
+
+5 60
+
+Dòng đầu tiên là số công việc (12), các dòng tiếp theo mỗi dòng mô tả một công việc bao gồm d[u]: thời gian hoàn thành công việc u và danh sách các công việc trước đó của u. Danh sách được kết thúc bằng số 0. Ví dụ: công việc 1 (công việc A) có d[1] = 14 và danh sách các công việc trước đó rỗng.
+Công việc 2 (công việc B) có d[2] = 12 và danh sách công việc trước đó là {1}.
+Dòng cuối cùng: công việc u và thời gian bắt đầu t, hai giá trị u và t tương ứng với câu hỏi của anh Tuấn:  "Nếu công việc u mình bắt đầu làm vào ngày thứ t thì tổng thời gian thực hiện dự án có bị ảnh hưởng không?"
+
+Đầu ra:
+Yes: Nếu ngày bắt đầu thực hiên công việc nằm trong thời điểm sớm nhất và trể nhất để bắt đầu công việc tương ứng.
+No: Nếu ngày bắt đầu thực hiện công việc KHÔNG nằm trong thời điểm sớm nhất và trể nhất để bắt đầu công việc tương ứng.
+Ví dụ: Công việc 5, mình có thể bắt đầu làm vào ngày thứ 60 được hay không? => YES (Vì Thời gian sớm nhất và thời gian trể nhất thực hiện công việc 5 là: 56-71, 60 nằm trong khoảng thời gian cho phép)
+
+Chú ý đọc dữ liệu:
+Đọc dữ liệu
+
+For example:
+
+Input		Result
+12		YES
+14 0
+12 1 0
+30 2 0
+9 2 0
+14 3 0
+18 3 0
+15 3 0
+19 3 0
+10 6 7 8 0
+15 5 9 0
+12 4 10 0
+4 11 0
+4 60
+
+
+#include <stdio.h>
+#include <limits.h>
+
+#define MAX_N 100
+#define INF INT_MAX
+
+int n, m; // n là số công việc, m là số lượng cạnh
+int d[MAX_N]; // d[u]: thời gian hoàn thành công việc u
+int adj[MAX_N][MAX_N]; // Ma trận kề lưu các cạnh của đồ thị
+int earliest[MAX_N]; // Thời gian sớm nhất để bắt đầu mỗi công việc
+int latest[MAX_N]; // Thời gian trễ nhất để bắt đầu mỗi công việc
+
+// Hàm sắp xếp topo và tính thời gian sớm nhất
+void topologicalSortEarliest() {
+    int inDegree[MAX_N] = {0};
+    int queue[MAX_N], front = 0, rear = 0;
+
+    // Tính bậc vào của mỗi đỉnh
+    for (int u = 1; u <= n; u++) {
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v]) 
+            inDegree[v]++;
+        }
+    }
+
+    // Đưa các đỉnh có bậc vào bằng 0 vào hàng đợi
+    for (int u = 1; u <= n; u++) {
+        if (inDegree[u] == 0) {
+            queue[rear++] = u;
+            earliest[u] = 0;
+        }
+    }
+
+    // Xử lý theo thứ tự topo
+    while (front < rear) { 
+        int u = queue[front++];
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v]) {
+                // Cập nhật thời gian sớm nhất để bắt đầu công việc v
+                if (earliest[v] < earliest[u] + d[u]) {
+                    earliest[v] = earliest[u] + d[u];
+                }
+                // Giảm bậc vào và nếu bậc vào là 0 thì đưa vào hàng đợi
+                if (--inDegree[v] == 0) {
+                    queue[rear++] = v;
+                }
+            }
+        }
+    }
+}
+
+// Hàm tính thời gian trễ nhất để bắt đầu mỗi công việc
+void topologicalSortLatest(int projectDuration) {
+    int outDegree[MAX_N] = {0};
+    int queue[MAX_N], front = 0, rear = 0;
+
+    // Khởi tạo thời gian trễ nhất của các đỉnh với giá trị lớn nhất có thể
+    for (int u = 1; u <= n; u++) {
+        latest[u] = INF; // gán giá trị vô cùng cho thời gian trễ nhất
+        for (int v = 1; v <= n; v++) {
+            if (adj[u][v]) outDegree[u]++;
+        }
+    }
+
+    // Đặt thời gian trễ nhất của đỉnh kết thúc bằng thời gian dự án
+    for (int u = 1; u <= n; u++) {
+        if (outDegree[u] == 0) {
+            queue[rear++] = u;
+            latest[u] = projectDuration;
+        }
+    }
+
+    // Xử lý theo thứ tự topo ngược
+    while (front < rear) {
+        int u = queue[front++];
+        for (int v = 1; v <= n; v++) {
+            if (adj[v][u]) { // Nếu có cạnh từ v đến u
+                // Cập nhật thời gian trễ nhất để bắt đầu công việc v
+                if (latest[v] > latest[u] - d[v]) {
+                    latest[v] = latest[u] - d[v];
+                }
+                // Giảm bậc ra và nếu bậc ra là 0 thì đưa vào hàng đợi
+                if (--outDegree[v] == 0) {
+                    queue[rear++] = v;
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    int u, v;
+
+    // Đọc dữ liệu từ file
+    //freopen("DuAnPhanMem.txt", "r", stdin);
+    scanf("%d", &n);
+    
+    // Đọc thời gian hoàn thành và các công việc trước đó cho từng công việc
+    for (u = 1; u <= n; u++) {
+        scanf("%d", &d[u]);
+        while (1) {
+            scanf("%d", &v);
+            if (v == 0) break;
+            adj[v][u] = 1; // Có cạnh từ v đến u
+        }
+    }
+
+    // Sắp xếp topo và tính thời gian sớm nhất cho mỗi công việc
+    topologicalSortEarliest();
+
+    // Tính thời gian sớm nhất hoàn thành dự án
+    int projectDuration = 0;
+    for (u = 1; u <= n; u++) {
+        if (projectDuration < earliest[u] + d[u]) {
+            projectDuration = earliest[u] + d[u];
+        }
+    }
+
+    // Tính thời gian trễ nhất để bắt đầu mỗi công việc
+    topologicalSortLatest(projectDuration);
+
+    // Đọc câu hỏi của anh Tuấn
+    int queryTask, queryTime;
+    scanf("%d %d", &queryTask, &queryTime);
+
+    // Kiểm tra câu hỏi
+    if (queryTime >= earliest[queryTask] && queryTime <= latest[queryTask]) {
+        printf("YES\n");
+    } else {
+        printf("NO\n");
+    }
+
+    return 0;
+}
+
+
